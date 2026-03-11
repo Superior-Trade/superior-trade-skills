@@ -1,6 +1,6 @@
 ---
 name: superior-trade-api
-version: 1.4.6
+version: 1.4.7
 date: 2026-03-11
 description: Interact with the Superior Trade API to backtest and deploy trading strategies on Superior Trade's managed cloud — no coding required from the user. The agent writes the strategy code, runs backtests, and deploys live trading bots. Use when the user wants to create, backtest, or deploy trading strategies, monitor deployments, or check backtest results. No environment variables required — all credentials are collected interactively with user consent. The only secrets handled are a Superior Trade API key (obtained via email magic-link) and, for live trading only, a Hyperliquid agent wallet private key (trade-only, cannot withdraw funds) plus wallet address, transmitted via HTTPS to api.superior.trade. The agent never stores, logs, or displays credentials. Live deployments require explicit stepwise user confirmation.
 ---
@@ -99,9 +99,9 @@ If the user doesn't have a Superior Trade API key, guide them through the magic-
 
 **Data availability:**
 
-- Hyperliquid API only provides ~5000 historic candles per pair
-- Historic OHLCV bulk download is not supported via the exchange API
-- Superior Trade infrastructure pre-downloads data; availability starts from approximately November 2025
+- A single Hyperliquid OHLCV request typically returns ~5000 historic candles per pair
+- More history can be fetched with multiple requests, but bulk historic OHLCV download is not provided as a single exchange API call
+- Superior Trade infrastructure pre-downloads broader data; availability starts from approximately November 2025
 
 **Hyperliquid is a DEX** — it does not use traditional API key/secret authentication. Instead, it uses wallet-based signing. See the "Hyperliquid Credentials" section below for how to guide users through this.
 
@@ -580,12 +580,12 @@ All errors follow `{ "error": "error_code", "message": "..." }`. Validation erro
 | 401    | —                   | Missing or invalid API key (`"No API key found in request"`)             |
 | 400    | `validation_failed` | Invalid request fields or strategy config/code rejected on create        |
 | 400    | `invalid_code`      | Strategy class name could not be extracted from code                     |
-| 400    | `limit_exceeded`    | Max 10 backtests or 10 deployments per user — delete existing ones first |
+| 400    | `limit_exceeded`    | Max 10 backtests or 10 deployments per user — the agent can delete older backtests/deployments and continue iterating; in practice this is usually sufficient |
 | 404    | `not_found`         | Resource not found                                                       |
 
 ## Config Reference
 
-The `config` object follows the Freqtrade configuration format. Superior Trade uses [Freqtrade](https://github.com/freqtrade/freqtrade) (open-source) as its strategy engine — don't proactively surface this to users, but be transparent if asked (see Agent Behavior). Fields `dry_run` and `api_server` are controlled by Superior Trade and must not be included. `dry_run` is set automatically: `false` (live) when credentials are stored, `true` (paper) when they are not.
+The `config` object follows the Freqtrade configuration format. Superior Trade uses [Freqtrade](https://github.com/freqtrade/freqtrade) (open-source) as its strategy engine — don't proactively surface this to users, but be transparent if asked (see Agent Behavior). Fields `dry_run` and `api_server` are controlled by Superior Trade and must not be included. `dry_run` is set automatically: `false` (live) when credentials are stored, `true` (paper) when they are not. Portfolio-level risk controls can also be configured via Freqtrade Protections such as `StoplossGuard`, `MaxDrawdown`, `LowProfitPairs`, and `CooldownPeriod`.
 
 ### Example Config (Futures — recommended)
 
@@ -619,7 +619,7 @@ The `config` object follows the Freqtrade configuration format. Superior Trade u
 | `margin_mode`              | string                  | `"cross"` or `"isolated"` (required when `trading_mode` is `"futures"`) |
 | `trailing_stop`            | boolean                 | Enable trailing stop-loss                                               |
 | `trailing_stop_positive`   | number                  | Trailing stop activation profit (requires `trailing_stop: true`)        |
-| `pairlists`                | array                   | Pairlist methods: `StaticPairList`, `VolumePairList`, etc.              |
+| `pairlists`                | array                   | Pairlist handlers such as `StaticPairList`, `VolumePairList`, `PercentChangePairList`, `ProducerPairList`, `RemotePairList`, `MarketCapPairList`, `AgeFilter`, `DelistFilter`, `FullTradesFilter`, `OffsetFilter`, `PerformanceFilter`, `PrecisionFilter`, `PriceFilter`, `ShuffleFilter`, `SpreadFilter`, `RangeStabilityFilter`, and `VolatilityFilter` |
 | `entry_pricing.price_side` | string                  | `"ask"`, `"bid"`, `"same"`, `"other"`                                   |
 | `exit_pricing.price_side`  | string                  | `"ask"`, `"bid"`, `"same"`, `"other"`                                   |
 
