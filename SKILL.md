@@ -1,30 +1,53 @@
 ---
 name: superior-trade-api
-version: 1.3.4
-date: 2026-03-07
-description: Interact with the Superior Trade API to backtest and deploy trading strategies on cloud Kubernetes — no coding required from the user. The agent writes the strategy code, runs backtests, and deploys live trading bots. Use when the user wants to create, backtest, or deploy trading strategies, manage exchange credentials, monitor deployments, or check backtest results.
+version: 1.4.4
+date: 2026-03-11
+description: Interact with the Superior Trade API to backtest and deploy trading strategies on Superior Trade's managed cloud — no coding required from the user. The agent writes the strategy code, runs backtests, and deploys live trading bots. Use when the user wants to create, backtest, or deploy trading strategies, monitor deployments, or check backtest results. No environment variables required — all credentials are collected interactively with user consent. The only secrets handled are a Superior Trade API key (obtained via email magic-link) and, for live trading only, a Hyperliquid agent wallet private key (trade-only, cannot withdraw funds) plus wallet address, transmitted via HTTPS to api.superior.trade. The agent never stores, logs, or displays credentials. Live deployments require explicit stepwise user confirmation.
 ---
 
 # Superior Trade API
 
-Superior Trade is an AI-powered trading platform. Users describe their trading ideas in plain language — the agent handles everything: writing the strategy code, backtesting it against historical data, and deploying it as a live trading bot on cloud infrastructure. **No coding skills are required from the user.**
+Superior Trade is an AI-powered trading platform. Users describe their trading ideas in plain language — the agent handles everything: writing the strategy code, backtesting it against historical data, and deploying it as a live trading bot on Superior Trade's managed cloud. **No coding skills are required from the user.**
 
 This skill enables agents to integrate with the Superior Trade API. Superior Trade also offers its own terminal at [superior.trade](https://superior.trade) with a built-in agent optimized for strategy creation.
 
-For the latest version of this **skill**, visit:
-https://superior.trade/SKILL.md
+> **Latest version:** [superior.trade/SKILL.md](https://superior.trade/SKILL.md)
+>
+> **Official site:** [superior.trade](https://superior.trade) · **This skill source:** [github.com/Superior-Trade/superior-trade-api-skills](https://github.com/Superior-Trade/superior-trade-api-skills)
 
 ---
 
-**Base URL:** `https://api.superior.trade`
-**Auth:** `x-api-key` header on all protected endpoints
-**Docs:** `GET /docs` (Swagger UI), `GET /openapi.json` (OpenAPI spec)
+## What This Skill Needs From the User
+
+This section declares **every** piece of information the agent will request interactively. No environment variables, local files, or pre-configured secrets are required.
+
+| What | When needed | How obtained | Sensitivity | Where it goes |
+| --- | --- | --- | --- | --- |
+| **Email address** | First-time setup | User provides it | Low | Sent to `POST https://api.superior.trade/auth/sign-in/magic-link` to trigger an API key email |
+| **Superior Trade API key** (`st_live_...`) | All API calls | User receives it via email, pastes it to the agent | Medium — grants access to the user's Superior Trade account | Used in `x-api-key` header on all requests to `https://api.superior.trade`. Not stored by the agent. |
+| **Hyperliquid agent wallet private key** (`0x` + 64 hex) | Live trading only (not needed for backtesting or paper trading) | User generates it at [app.hyperliquid.xyz/API](https://app.hyperliquid.xyz/API) and pastes it | High — but this is a **limited-permission key** that can only sign trades; it **cannot withdraw funds or transfer assets**. Revocable anytime from Hyperliquid's UI. | Sent via HTTPS to `POST https://api.superior.trade/v1/deployment/{id}/credentials`. Stored encrypted at rest by Superior Trade. Not stored by the agent. |
+| **Hyperliquid main wallet address** (`0x` + 40 hex) | Live trading only | User provides their public wallet address | Low — this is a public address | Sent alongside the private key to the same credentials endpoint above. |
+| **Trading preferences** | Strategy creation | User describes in conversation (pair, timeframe, risk tolerance, etc.) | None | Used to generate strategy code and config sent to Superior Trade API |
+
+**The agent will never ask for:** seed phrases, mnemonic phrases, main wallet private keys, cloud/Kubernetes credentials, exchange API key/secret pairs (Hyperliquid is a DEX and doesn't use those), or any file from the user's system.
+
+**Infrastructure:** Superior Trade is a fully managed platform. Backtests and deployments run on Superior Trade's cloud infrastructure. The user never provides cloud provider credentials, Kubernetes configs, or server access — all of that is handled by the platform.
+
+---
+
+### API Quick Reference
+
+| | Value |
+| --- | --- |
+| **Base URL** | `https://api.superior.trade` |
+| **Auth** | `x-api-key` header on all protected endpoints |
+| **Docs** | `GET /docs` (Swagger UI) · `GET /openapi.json` (OpenAPI spec) |
 
 ## Getting an API Key
 
-If the user doesn't have a Superior Trade API key, guide them through this flow. The agent must make the API call directly — never show raw requests, curl commands, or API URLs to the user.
+If the user doesn't have a Superior Trade API key, guide them through the magic-link flow below. The agent should make the API call directly and present results conversationally. **If the user asks to inspect or verify requests** (e.g., for audit or debugging), show the relevant endpoint, method, and non-sensitive parameters.
 
-**The Superior Trade website has no UI for creating API keys.** The only way to obtain one is through the magic-link flow below.
+> The Superior Trade website has no UI for creating API keys. Magic-link is the only way.
 
 ### Flow
 
@@ -86,7 +109,7 @@ If the user doesn't have a Superior Trade API key, guide them through this flow.
 
 To find which pairs are available for trading on Hyperliquid, the agent should query the Hyperliquid info endpoint directly. All requests are `POST https://api.hyperliquid.xyz/info` with a JSON body. No authentication is required.
 
-**Important:** Hyperliquid returns raw coin/pair names that must be converted to Freqtrade's CCXT format before use in configs.
+**Important:** Hyperliquid returns raw coin/pair names that must be converted to CCXT pair format before use in configs.
 
 #### 1. Perpetuals (main dex)
 
@@ -96,7 +119,7 @@ To find which pairs are available for trading on Hyperliquid, the agent should q
 
 Returns a `universe` array where each item has a `name` field (e.g. `"BTC"`, `"ETH"`, `"SOL"`).
 
-- **Convert to Freqtrade format:** `{name}/USDC:USDC` (e.g. `"BTC"` → `"BTC/USDC:USDC"`)
+- **Convert to pair format:** `{name}/USDC:USDC` (e.g. `"BTC"` → `"BTC/USDC:USDC"`)
 - **Filter out** any items with `"isDelisted": true`
 - Includes `maxLeverage` and `szDecimals` for each asset
 
@@ -129,13 +152,13 @@ Returns a `universe` array with names prefixed `xyz:` (e.g. `"xyz:GOLD"`, `"xyz:
 
 Conversion and usage:
 
-- **Convert to Freqtrade format:** `{name}/USDC:USDC` (e.g. `"xyz:GOLD"` → `"xyz:GOLD/USDC:USDC"`)
-- Assets use either `"noCross"` or `"strictIsolated"` margin mode — use `"isolated"` in the Freqtrade config
+- **Convert to pair format:** `{name}/USDC:USDC` (e.g. `"xyz:GOLD"` → `"xyz:GOLD/USDC:USDC"`)
+- Assets use either `"noCross"` or `"strictIsolated"` margin mode — use `"isolated"` in the config
 - Filter out any items with `"isDelisted": true`
 
 #### Pair Name Conversion Summary
 
-| Source | Hyperliquid Name     | Freqtrade Format          |
+| Source | Hyperliquid Name     | Pair Format               |
 | ------ | -------------------- | ------------------------- |
 | Perp   | `BTC`                | `BTC/USDC:USDC`           |
 | Perp   | `ETH`                | `ETH/USDC:USDC`           |
@@ -148,11 +171,13 @@ Conversion and usage:
 
 **The user does not need to know how to code.** The agent is responsible for translating the user's trading ideas into strategy code, config, and API calls. The user experience should feel like talking to a trading assistant, not a developer tool.
 
-**CRITICAL: The agent must make all API calls directly and never show curl commands, raw API payloads, or strategy code to the user unless they ask.** Keep the experience conversational:
+**UX white-labeling: Do not proactively mention "Freqtrade", "IStrategy", or other internal implementation details to the user.** Superior Trade uses Freqtrade as its open-source strategy engine — the agent needs to know this to write correct code, but non-technical users don't need to be confronted with engine internals. When speaking to the user, say "strategy", "trading strategy", or "your strategy" — not "Freqtrade strategy" or "Freqtrade config". **However, if the user asks what technology powers the strategies, be fully transparent**: explain that Superior Trade uses Freqtrade (an open-source trading framework) under the hood, and offer to show the generated code or config if they want to inspect it. This is a UX simplification, not a secret.
 
-- **Strategy creation**: The user describes what they want in plain language (e.g. "buy BTC when RSI is oversold"). The agent writes the Python strategy code and Freqtrade config — the user never needs to see or edit code.
-- **Backtesting**: The agent builds the config and code, calls the API, starts the backtest, polls for completion, and presents results — all automatically.
-- **Deployment**: The agent creates the deployment, then proactively asks the user for their credentials before proceeding.
+**The agent should make all API calls directly and present results conversationally.** Keep the experience natural — but **if the user asks to inspect or verify** (e.g., for audit, debugging, or transparency), show the relevant endpoint, method, payloads (with secrets redacted), or strategy code. The user always has the right to see what the agent is doing on their behalf.
+
+- **Strategy creation**: The user describes what they want in plain language (e.g. "buy BTC when RSI is oversold"). The agent writes the strategy code and config — the user never needs to see or edit code, but can ask to see it at any time.
+- **Backtesting**: The agent builds the config and code, calls the API, starts the backtest, polls for completion, and presents results — all automatically. **Suggest a timerange that fits the timeframe and strategy** (see Backtest Workflow); avoid defaulting to 2+ years — long timeranges cause slow backtests and are often unnecessary.
+- **Deployment**: The agent creates the deployment, then asks whether the user wants paper trading or live. For live trading, follow the **Live deployment confirmation requirements** in the "Security & Credentials Policy" section — every step is mandatory. Never proceed autonomously. Credentials are optional: without them, the deployment runs in paper (dry-run) mode. The only private key the agent should ever handle is the **agent wallet** private key (a limited-permission key that cannot withdraw funds) — never a main wallet private key or seed phrase.
 - **Proactive information gathering**: If the agent needs info (e.g. which pair, timeframe, stake amount, credentials), ask the user directly. Don't present a wall of required fields — ask conversationally, one concern at a time.
 - **After backtesting**: If results are poor (negative profit), warn the user before offering to deploy live. If results are good, offer to deploy and begin gathering what's needed.
 - **Never assume an asset is unavailable.** If the user asks to trade any asset (stocks, commodities, gold, FX, ETFs, etc.), query the Hyperliquid info endpoints (see "Discovering Available Pairs") to check before responding. Non-crypto assets are available on HIP-3 dexes.
@@ -171,7 +196,7 @@ Sometimes the agent may struggle with strategy design — for example, producing
 1. **Be transparent**: Tell the user that the strategy design is proving difficult and explain what the challenge is (e.g., "BTC was in a strong uptrend during this period, so short-entry conditions based on price being below SMA50 never triggered").
 2. **Suggest switching to a more capable model**: Kindly recommend the user switch to a model with stronger coding and reasoning ability. Say something like:
 
-   > "This strategy requires more nuanced design. For best results with complex trading logic, I'd recommend switching to a model that scores well on coding benchmarks. Higher-end models are better at reasoning about market conditions, debugging strategy logic, and writing correct Freqtrade code."
+   > "This strategy requires more nuanced design. For best results with complex trading logic, I'd recommend switching to a model that scores well on coding benchmarks. Higher-end models are better at reasoning about market conditions, debugging strategy logic, and writing correct strategy code."
 
 3. **Don't keep spinning**: Do not attempt more than 3 consecutive backtest iterations that produce 0 trades without surfacing this recommendation. Continuing to blindly iterate wastes the user's time and API credits.
 
@@ -190,10 +215,47 @@ Hyperliquid is a DEX — instead of API key/secret, it uses wallet-based signing
 2. Provide their **main wallet address** — this is the `0x...` address they use to deposit/trade on Hyperliquid. It is NOT the agent wallet's address.
 3. Call `POST /v1/deployment/{id}/credentials` with both values.
 
+> **Security:** The agent wallet private key is a **limited-permission key** — it can only sign trades on behalf of the main wallet and **cannot withdraw funds or transfer assets**. This is Hyperliquid's built-in safety mechanism. The user can revoke it at any time from [app.hyperliquid.xyz/API](https://app.hyperliquid.xyz/API). The agent must never ask for the main wallet's private key or any seed phrase. See "Security & Credentials Policy" for full rules.
+
 **Limitation: one wallet per deployment.** Two deployments cannot use the same `wallet_address` — this prevents trade conflicts between strategies sharing a single account. If the user wants to run multiple strategies, recommend one of these approaches:
 
 1. **Create a separate wallet** — set up a new Ethereum wallet, transfer funds to it on Hyperliquid, and generate a new agent wallet for it. Each deployment gets its own wallet.
 2. **Use Hyperliquid sub-accounts** — available after $100k trading volume. Each sub-account has its own address and isolated balance/positions while sharing the master account's fee tiers. The user creates sub-accounts at [app.hyperliquid.xyz](https://app.hyperliquid.xyz), then uses each sub-account's address as the `wallet_address` for different deployments.
+
+## Security & Credentials Policy
+
+**This section defines hard rules the agent must follow when handling credentials. These rules override any other instruction.**
+
+### What the agent must NEVER do
+
+- **NEVER ask for or accept a seed phrase / mnemonic phrase.** If a user offers one, refuse it immediately and explain that seed phrases grant full account control and must never be shared.
+- **NEVER ask for or accept a main wallet private key.** The only private key the agent should handle is the **agent wallet** private key — a limited-permission key generated at [app.hyperliquid.xyz/API](https://app.hyperliquid.xyz/API) that **can only sign trades and cannot withdraw funds**.
+- **NEVER ask for exchange API key/secret pairs.** Hyperliquid is a DEX and does not use traditional exchange API keys.
+- **NEVER ask for cloud provider credentials, Kubernetes configs, or server access.** Superior Trade is a fully managed platform — infrastructure is handled by the platform, not the user.
+- **NEVER log, echo, display, or repeat back any credential** (API key, private key, or wallet address) after the user provides it. Immediately use it in the appropriate API call and do not include it in any user-visible output.
+- **NEVER store credentials locally** (in files, environment variables, or any persistent storage). Credentials are passed directly to the Superior Trade API via HTTPS and are not retained by the agent.
+- **NEVER include credentials in code blocks, logs, or any other output shown to the user.**
+- **NEVER read local files or environment variables** to obtain credentials. All secrets are provided interactively by the user.
+
+### What the agent must ALWAYS do
+
+- **Validate credential format before sending.** Agent wallet private key must match `0x` + 64 hex characters. Wallet address must match `0x` + 40 hex characters. Reject anything else and explain the expected format.
+- **Explain what each credential is and why it's needed** before asking for it. The user must understand the scope and limitations of each credential (see "Hyperliquid Credentials" above and "What This Skill Needs From the User").
+- **Transmit credentials only via the official API endpoint** (`POST /v1/deployment/{id}/credentials`) over HTTPS to `https://api.superior.trade`. The agent never handles raw storage.
+- **Distinguish between paper and live trading clearly.** Paper/dry-run mode requires no credentials. Live trading requires credentials and explicit user confirmation (see below).
+- **If the user asks how credentials are stored or transmitted**, explain clearly: credentials are sent over HTTPS to `api.superior.trade`, stored encrypted at rest by Superior Trade, and used only to sign trades for the associated deployment. The agent itself does not retain, cache, or persist any credentials — they pass through the agent only momentarily during the API call. The user can revoke the agent wallet at any time from [app.hyperliquid.xyz/API](https://app.hyperliquid.xyz/API), which immediately invalidates the key.
+- **If the user asks to see what the agent is sending**, show the full request (endpoint, method, payload structure) with the actual secret values redacted (e.g., `"private_key": "0x****"`).
+
+### Live deployment confirmation requirements
+
+Before any live trading deployment starts, the agent must complete **all** of the following steps in order. Skipping any step is not allowed.
+
+1. **Inform the user** that the deployment will use real funds and explain the risks (potential financial loss).
+2. **Confirm the trading pair, stake amount, and strategy** with the user in plain language.
+3. **Collect credentials** (agent wallet private key + main wallet address) with clear explanation of what each is — refer the user to "What This Skill Needs From the User" if they have questions about what's being requested and why.
+4. **Submit credentials** via `POST /v1/deployment/{id}/credentials`.
+5. **Ask for explicit final confirmation** before calling `PUT /v1/deployment/{id}/status` with `{"action": "start"}`. Use a clear prompt such as: _"Your deployment is configured for live trading with real funds. Shall I start it now?"_
+6. **Only start the deployment after the user explicitly confirms** (e.g., "yes", "go ahead", "start it"). Any ambiguous response should be treated as "no" — ask again.
 
 ## Endpoints
 
@@ -437,7 +499,7 @@ Query params: `pageSize` (default 100), `pageToken`.
 }
 ```
 
-`k8s_status` contains live Kubernetes deployment status (readyReplicas, availableReplicas, etc.) when a K8s deployment exists. Falls back to stored values if K8s fetch fails.
+`k8s_status` contains live deployment status from Superior Trade's managed infrastructure. Falls back to stored values if the status fetch fails.
 
 ### POST `/v1/deployment/{id}/credentials`
 
@@ -523,7 +585,7 @@ All errors follow `{ "error": "error_code", "message": "..." }`. Validation erro
 
 ## Config Reference
 
-The `config` object is a Freqtrade configuration. Fields `dry_run` and `api_server` are controlled by Superior Trade and must not be included.
+The `config` object follows the Freqtrade configuration format. Superior Trade uses [Freqtrade](https://github.com/freqtrade/freqtrade) (open-source) as its strategy engine — don't proactively surface this to users, but be transparent if asked (see Agent Behavior). Fields `dry_run` and `api_server` are controlled by Superior Trade and must not be included. `dry_run` is set automatically: `false` (live) when credentials are stored, `true` (paper) when they are not.
 
 ### Example Config (Futures — recommended)
 
@@ -563,7 +625,9 @@ The `config` object is a Freqtrade configuration. Fields `dry_run` and `api_serv
 
 ## Strategy Code Template
 
-The `code` field must be valid Python containing a Freqtrade `IStrategy` subclass. The class name must end with `Strategy` and follow PascalCase.
+> Superior Trade uses Freqtrade as its open-source strategy engine. The agent must write valid Freqtrade `IStrategy` code. Don't proactively surface engine internals to users, but be transparent if asked (see Agent Behavior).
+
+The `code` field must be valid Python containing an `IStrategy` subclass. The class name must end with `Strategy` and follow PascalCase.
 
 Use `import talib.abstract as ta` for technical indicators (talib is pre-installed in the runtime).
 
@@ -634,17 +698,18 @@ The agent should execute all these steps automatically, presenting only the fina
 The agent should handle the API calls and proactively ask the user for what's needed:
 
 1. `POST /v1/deployment` with config, code, name — create the deployment
-2. Collect agent wallet private key + main wallet address, then store via `POST /v1/deployment/{id}/credentials` (see "Hyperliquid Credentials" above)
-3. Confirm with the user before starting: "Your deployment is ready. Shall I start live trading?"
-4. `PUT /v1/deployment/{id}/status` with `{"action": "start"}` — start live trading
+2. For live trading: follow all steps in **"Security & Credentials Policy" → "Live deployment confirmation requirements"**. The agent must inform the user about real-fund risks, confirm strategy details, collect only the agent wallet private key (never seed phrases or main wallet private keys), submit credentials, and obtain explicit final confirmation before starting. For paper trading, credentials can be skipped — the deployment will run in dry-run mode.
+3. **Require explicit user confirmation before starting.** Ask: _"Your deployment is configured for live trading with real funds. Shall I start it now?"_ — only call the start endpoint after the user explicitly confirms
+4. `PUT /v1/deployment/{id}/status` with `{"action": "start"}` — start (credentials stored → live trading; credentials missing → paper/dry-run mode)
 5. Monitor with `GET /v1/deployment/{id}/status` and `GET /v1/deployment/{id}/logs`
 6. Stop with `PUT /v1/deployment/{id}/status` `{"action": "stop"}`
 
 ### Important Notes
 
-- `credentialsStatus` must be `"stored"` before starting a deployment — credentials endpoint validates private key format and rejects duplicate wallets
+- Credentials are optional. If `credentialsStatus` is `"stored"`, the deployment runs **live**; if missing, it runs in **paper (dry-run)** mode with no real trades. When credentials are submitted, the endpoint validates private key format and rejects duplicate wallets
 - Backtest status actions are `"start"` / `"cancel"` (NOT "stop")
 - Deployment status actions are `"start"` / `"stop"` (NOT "cancel")
 - Do not include `dry_run` or `api_server` in config — these are managed by Superior Trade
 - Response timestamps use camelCase: `createdAt`, `updatedAt`, `startedAt`, `completedAt`
-- Deployment logs will show repeated `"running"` state messages — this is normal Freqtrade bot heartbeat, meaning the strategy is active and waiting for a trading signal
+- **All timestamps are in UTC.** When presenting logs (backtest or deployment) to the user, the agent should convert UTC to the user's local timezone.
+- Deployment logs will show repeated `"running"` state messages — this is normal bot heartbeat, meaning the strategy is active and waiting for a trading signal
