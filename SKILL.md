@@ -575,13 +575,13 @@ Pagination is cursor-based. Pass `cursor` query param with the `nextCursor` valu
 
 All errors follow `{ "error": "error_code", "message": "..." }`. Validation errors include a `details` array.
 
-| Status | Error Code          | Description                                                              |
-| ------ | ------------------- | ------------------------------------------------------------------------ |
-| 401    | —                   | Missing or invalid API key (`"No API key found in request"`)             |
-| 400    | `validation_failed` | Invalid request fields or strategy config/code rejected on create        |
-| 400    | `invalid_code`      | Strategy class name could not be extracted from code                     |
+| Status | Error Code          | Description                                                                                                                                                   |
+| ------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 401    | —                   | Missing or invalid API key (`"No API key found in request"`)                                                                                                  |
+| 400    | `validation_failed` | Invalid request fields or strategy config/code rejected on create                                                                                             |
+| 400    | `invalid_code`      | Strategy class name could not be extracted from code                                                                                                          |
 | 400    | `limit_exceeded`    | Max 10 backtests or 10 deployments per user — the agent can delete older backtests/deployments and continue iterating; in practice this is usually sufficient |
-| 404    | `not_found`         | Resource not found                                                       |
+| 404    | `not_found`         | Resource not found                                                                                                                                            |
 
 ## Config Reference
 
@@ -605,23 +605,23 @@ The `config` object follows the Freqtrade configuration format. Superior Trade u
 
 ### Common Config Fields
 
-| Field                      | Type                    | Description                                                             |
-| -------------------------- | ----------------------- | ----------------------------------------------------------------------- |
-| `exchange.name`            | string                  | Must be `"hyperliquid"`                                                 |
-| `exchange.pair_whitelist`  | string[]                | Spot: `["BTC/USDC"]`, Futures: `["BTC/USDC:USDC"]`                      |
-| `stake_currency`           | string                  | `"USDC"`                                                                |
-| `stake_amount`             | number or `"unlimited"` | Amount per trade                                                        |
-| `timeframe`                | string                  | Candle timeframe: `"1m"`, `"5m"`, `"15m"`, `"1h"`, `"4h"`, `"1d"`       |
-| `max_open_trades`          | integer                 | Max concurrent trades (-1 for unlimited)                                |
-| `stoploss`                 | number                  | Must be negative, e.g. `-0.10` for 10%                                  |
-| `minimal_roi`              | object                  | Minutes-to-ROI map, e.g. `{ "0": 0.10, "30": 0.05 }`                    |
-| `trading_mode`             | string                  | `"spot"` or `"futures"` (omit for spot, which is the default)           |
-| `margin_mode`              | string                  | `"cross"` or `"isolated"` (required when `trading_mode` is `"futures"`) |
-| `trailing_stop`            | boolean                 | Enable trailing stop-loss                                               |
-| `trailing_stop_positive`   | number                  | Trailing stop activation profit (requires `trailing_stop: true`)        |
+| Field                      | Type                    | Description                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `exchange.name`            | string                  | Must be `"hyperliquid"`                                                                                                                                                                                                                                                                                                                                   |
+| `exchange.pair_whitelist`  | string[]                | Spot: `["BTC/USDC"]`, Futures: `["BTC/USDC:USDC"]`                                                                                                                                                                                                                                                                                                        |
+| `stake_currency`           | string                  | `"USDC"`                                                                                                                                                                                                                                                                                                                                                  |
+| `stake_amount`             | number or `"unlimited"` | Amount per trade                                                                                                                                                                                                                                                                                                                                          |
+| `timeframe`                | string                  | Candle timeframe: `"1m"`, `"5m"`, `"15m"`, `"1h"`, `"4h"`, `"1d"`                                                                                                                                                                                                                                                                                         |
+| `max_open_trades`          | integer                 | Max concurrent trades (-1 for unlimited)                                                                                                                                                                                                                                                                                                                  |
+| `stoploss`                 | number                  | Must be negative, e.g. `-0.10` for 10%                                                                                                                                                                                                                                                                                                                    |
+| `minimal_roi`              | object                  | Minutes-to-ROI map, e.g. `{ "0": 0.10, "30": 0.05 }`                                                                                                                                                                                                                                                                                                      |
+| `trading_mode`             | string                  | `"spot"` or `"futures"` (omit for spot, which is the default)                                                                                                                                                                                                                                                                                             |
+| `margin_mode`              | string                  | `"cross"` or `"isolated"` (required when `trading_mode` is `"futures"`)                                                                                                                                                                                                                                                                                   |
+| `trailing_stop`            | boolean                 | Enable trailing stop-loss                                                                                                                                                                                                                                                                                                                                 |
+| `trailing_stop_positive`   | number                  | Trailing stop activation profit (requires `trailing_stop: true`)                                                                                                                                                                                                                                                                                          |
 | `pairlists`                | array                   | Pairlist handlers such as `StaticPairList`, `VolumePairList`, `PercentChangePairList`, `ProducerPairList`, `RemotePairList`, `MarketCapPairList`, `AgeFilter`, `DelistFilter`, `FullTradesFilter`, `OffsetFilter`, `PerformanceFilter`, `PrecisionFilter`, `PriceFilter`, `ShuffleFilter`, `SpreadFilter`, `RangeStabilityFilter`, and `VolatilityFilter` |
-| `entry_pricing.price_side` | string                  | `"ask"`, `"bid"`, `"same"`, `"other"`                                   |
-| `exit_pricing.price_side`  | string                  | `"ask"`, `"bid"`, `"same"`, `"other"`                                   |
+| `entry_pricing.price_side` | string                  | `"ask"`, `"bid"`, `"same"`, `"other"`                                                                                                                                                                                                                                                                                                                     |
+| `exit_pricing.price_side`  | string                  | `"ask"`, `"bid"`, `"same"`, `"other"`                                                                                                                                                                                                                                                                                                                     |
 
 ## Strategy Code Template
 
@@ -713,3 +713,4 @@ The agent should handle the API calls and proactively ask the user for what's ne
 - Response timestamps use camelCase: `createdAt`, `updatedAt`, `startedAt`, `completedAt`
 - **All timestamps are in UTC.** When presenting logs (backtest or deployment) to the user, the agent should convert UTC to the user's local timezone.
 - Deployment logs will show repeated `"running"` state messages — this is normal bot heartbeat, meaning the strategy is active and waiting for a trading signal
+- **Candle-based execution timing:** Freqtrade evaluates entry/exit conditions only after a candle closes — it does not act mid-candle. This means after a deployment starts, the bot must wait for the current candle to finish before it can evaluate any signals. For a `1h` timeframe, the first possible entry can take up to 1 hour; for `4h`, up to 4 hours; for `1d`, up to 24 hours. **The agent should set this expectation with the user when deploying**, especially if the user expects immediate entries. There is no way to force an immediate entry on the current incomplete candle — this is by design to ensure signals are based on confirmed (closed) candle data.
