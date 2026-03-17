@@ -614,6 +614,50 @@ class MyCustomStrategy(IStrategy):
 - Must define a class inheriting from `IStrategy` with a PascalCase name ending in `Strategy`
 - Must implement `populate_indicators`, `populate_entry_trend`, and `populate_exit_trend`
 
+### Multi-Output TA-Lib Functions (CRITICAL)
+
+Some TA-Lib abstract functions return a **DataFrame with multiple columns**, not a single Series. Assigning them directly to one column causes a runtime error that only appears during the backtest — not at validation time.
+
+**These functions return multiple columns — do NOT assign directly to a single column:**
+
+| Function       | Returns                                  |
+| -------------- | ---------------------------------------- |
+| `ta.BBANDS`    | `upperband`, `middleband`, `lowerband`   |
+| `ta.MACD`      | `macd`, `macdsignal`, `macdhist`         |
+| `ta.STOCH`     | `slowk`, `slowd`                         |
+| `ta.STOCHF`    | `fastk`, `fastd`                         |
+| `ta.STOCHRSI`  | `fastk`, `fastd`                         |
+| `ta.AROON`     | `aroondown`, `aroonup`                   |
+| `ta.HT_PHASOR` | `inphase`, `quadrature`                  |
+| `ta.MAMA`      | `mama`, `fama`                           |
+| `ta.MINMAXINDEX`| `minidx`, `maxidx`                      |
+
+```python
+# WRONG — causes runtime crash (shape mismatch)
+dataframe["bb_upper"] = ta.BBANDS(dataframe, timeperiod=20)
+dataframe["macd"] = ta.MACD(dataframe)
+
+# CORRECT — assign each column separately
+bb = ta.BBANDS(dataframe, timeperiod=20)
+dataframe["bb_upper"] = bb["upperband"]
+dataframe["bb_middle"] = bb["middleband"]
+dataframe["bb_lower"] = bb["lowerband"]
+
+macd = ta.MACD(dataframe)
+dataframe["macd"] = macd["macd"]
+dataframe["macd_signal"] = macd["macdsignal"]
+dataframe["macd_hist"] = macd["macdhist"]
+
+stoch = ta.STOCH(dataframe)
+dataframe["slowk"] = stoch["slowk"]
+dataframe["slowd"] = stoch["slowd"]
+```
+
+**Single-output functions** (RSI, SMA, EMA, ATR, ADX, etc.) return a Series and can be assigned directly:
+```python
+dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)  # OK — returns Series
+```
+
 ### One Open Trade Per Pair & DCA
 
 Freqtrade enforces a **one open trade per pair** rule. Once a trade is open on a pair (e.g. `BTC/USDC:USDC`), all subsequent entry signals for that pair are ignored until the trade is closed — even if the strategy generates a signal every candle.
