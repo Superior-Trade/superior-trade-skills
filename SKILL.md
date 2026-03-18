@@ -1,6 +1,6 @@
 ---
 name: superior-trade-api
-version: 1.5.0
+version: 1.6.0
 updated: 2026-03-18
 description: Interact with the Superior Trade API to backtest and deploy trading strategies on Superior Trade's managed cloud — no coding required from the user. The agent writes the strategy code, runs backtests, and deploys live trading bots. Use when the user wants to create, backtest, or deploy trading strategies, monitor deployments, or check backtest results. No environment variables required — all credentials are collected interactively.
 ---
@@ -74,6 +74,59 @@ If the user doesn't have a Superior Trade API key, guide them through the magic-
 - Superior Trade infrastructure pre-downloads data; availability starts from approximately November 2025
 
 **Hyperliquid is a DEX** — it does not use traditional API key/secret authentication. Instead, it uses wallet-based signing. See the "Hyperliquid Credentials" section below for how to guide users through this.
+
+### HIP3 — Tokenized Real-World Assets
+
+Hyperliquid supports **HIP3** tokenized assets — stocks, commodities, currencies, and indices — tradeable as perpetual futures. These are fetched directly from the Hyperliquid API and available in Superior Trade's pre-downloaded data.
+
+**Pair format** follows CCXT convention with a protocol prefix: `{PROTOCOL}-{TICKER}/USDC:USDC`
+
+**Available protocols and example pairs:**
+
+| Protocol | Asset Types | Stake Currency | Example Pairs (config format) |
+|----------|------------|----------------|-------------------------------|
+| `XYZ-` | US/KR stocks, metals, currencies, indices | USDC | `XYZ-AAPL/USDC:USDC`, `XYZ-TSLA/USDC:USDC`, `XYZ-GOLD/USDC:USDC` |
+| `CASH-` | Commodities, stocks | USDT0 | `CASH-GOLD/USDT0:USDT0`, `CASH-GOOGL/USDT0:USDT0` |
+| `FLX-` | Commodities, stocks, crypto | USDC or USDH | `FLX-GOLD/USDH:USDH`, `FLX-TSLA/USDH:USDH` |
+| `KM-` | Stocks, indices, bonds | USDH | `KM-GOOGL/USDH:USDH`, `KM-US500/USDH:USDH` |
+| `HYNA-` | Leveraged crypto | USDC or USDE | `HYNA-SOL/USDE:USDE`, `HYNA-XRP/USDC:USDC` |
+
+**XYZ protocol tickers** (USDC — most commonly used):
+- **US stocks**: AAPL, AMZN, GOOGL, META, TSLA, NFLX, HOOD, PLTR, INTC, RIVN, COIN, SNDK, BABA
+- **Metals**: GOLD, SILVER, COPPER, PLATINUM, PALLADIUM
+- **Currencies**: JPY
+- **Indices**: XYZ100
+- **Korean stocks**: HYUNDAI, SKHX, SMSN
+
+**Data availability:**
+- XYZ assets: data from ~November 2025 onwards
+- KM/CASH/FLX assets: data from ~February 2026 onwards
+- Timeframes: 1m, 3m, 5m, 15m, 30m, 1h (also 2h, 4h, 8h, 12h, 1d, 3d, 1w for some)
+- Funding rate data available at 1h timeframe
+
+**Trading considerations:**
+- HIP3 assets are **futures-only** — always use `trading_mode: "futures"` and `margin_mode: "cross"`
+- XYZ pairs use `stake_currency: "USDC"` — works with existing USDC balances
+- USDH/USDT0/USDE pairs require the corresponding stake currency
+- Stock-based HIP3 assets may have reduced liquidity outside US market hours
+- Use the same strategy code patterns as regular crypto futures — no special handling needed
+
+**Config example (XYZ-AAPL futures):**
+```json
+{
+  "exchange": { "name": "hyperliquid", "pair_whitelist": ["XYZ-AAPL/USDC:USDC"] },
+  "stake_currency": "USDC",
+  "stake_amount": 100,
+  "timeframe": "15m",
+  "max_open_trades": 3,
+  "stoploss": -0.05,
+  "trading_mode": "futures",
+  "margin_mode": "cross",
+  "entry_pricing": { "price_side": "other" },
+  "exit_pricing": { "price_side": "other" },
+  "pairlists": [{ "method": "StaticPairList" }]
+}
+```
 
 ### Unified vs Legacy Account Mode
 
