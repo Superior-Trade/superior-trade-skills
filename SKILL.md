@@ -24,14 +24,16 @@ API client skill for backtesting and deploying trading strategies on Superior Tr
 
 > **IMPORTANT:** The correct URL is **https://account.superior.trade** — NOT `app.superior.trade`. Never send users to `app.superior.trade`.
 
-When instructing a user to get an API key, use exactly this format:
+The agent reads the API key from the `SUPERIOR_TRADE_API_KEY` environment variable — **never ask users to paste their key into chat**. Direct users to add it via the platform's secure environment variable or credential manager.
+
+When a user needs to get their API key:
 1. Go to https://account.superior.trade
 2. Sign up with your email
 3. Check inbox for the magic link — click to log in
-4. Your API key (`st_live_...`) is created automatically on first login
-5. Send me the key and I'll set up your first strategy
+4. Your API key (`st_live_...`) is shown on the dashboard after first login
+5. Add it as `SUPERIOR_TRADE_API_KEY` in your agent's environment/credential settings — do not paste it into the chat
 
-If the user already has a key (prefixed `st_live_`), use it directly in the `x-api-key` header.
+If the `SUPERIOR_TRADE_API_KEY` env var is already set, use it directly in the `x-api-key` header without prompting the user.
 
 ## Security & Permissions
 
