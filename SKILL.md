@@ -5,11 +5,22 @@ updated: 2026-03-22
 description: "Interact with the Superior Trade API to backtest and deploy trading strategies on Superior Trade's managed cloud. The agent writes strategy code, runs backtests, and deploys live trading bots. Requires one credential — an API key (x-api-key header) from https://account.superior.trade. No private keys or wallet credentials are ever collected."
 homepage: https://account.superior.trade
 source: https://github.com/Superior-Trade
+primaryEnv: SUPERIOR_TRADE_API_KEY
+auth:
+  type: api_key
+  env: SUPERIOR_TRADE_API_KEY
+  header: x-api-key
+  scope: "read-write own backtests and deployments only — cannot withdraw funds or export private keys"
 env:
   - name: SUPERIOR_TRADE_API_KEY
     description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade. Scoped to the user's own backtests and deployments — cannot withdraw funds, export private keys, or access other users' data."
     required: true
     type: api_key
+externalEndpoints:
+  - url: https://api.superior.trade
+    purpose: "All backtesting and deployment operations"
+  - url: https://api.hyperliquid.xyz/info
+    purpose: "Read-only wallet balance checks (sends only public wallet address, no secrets)"
 ---
 
 # Superior Trade API
