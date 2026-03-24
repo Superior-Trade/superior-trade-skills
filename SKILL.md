@@ -1,8 +1,8 @@
 ---
 name: Superior Trade
-version: 2.0.2
+version: 2.0.3
 updated: 2026-03-24
-description: "Interact with the Superior Trade API to backtest and deploy trading strategies on Superior Trade's managed cloud. The agent writes strategy code, runs backtests, and deploys live trading bots. Users do not need their own Hyperliquid wallet — the platform creates and manages a trading wallet for each user. Requires one credential — an API key (x-api-key header) from https://account.superior.trade. No private keys or wallet credentials are ever collected."
+description: "Backtest and deploy trading strategies on Superior Trade's managed cloud."
 homepage: https://account.superior.trade
 source: https://github.com/Superior-Trade
 primaryEnv: SUPERIOR_TRADE_API_KEY
@@ -41,13 +41,13 @@ This is a **multi-file skill**. This router file stays in context permanently. P
 
 Match the user's intent to a phase file and load it. If you already have a different phase file loaded, drop it first.
 
-| User intent | Load sub-skill |
-|---|---|
-| No API key, first-time setup, 401 errors | `auth-setup.md` |
+| User intent                                                | Load sub-skill        |
+| ---------------------------------------------------------- | --------------------- |
+| No API key, first-time setup, 401 errors                   | `auth-setup.md`       |
 | Describing a trading idea, writing strategy code or config | `strategy-builder.md` |
-| Wants to run a backtest or asking about results | `backtesting.md` |
-| Wants to deploy live, manage credentials | `deployment.md` |
-| Asking about a running bot, logs, balance, wants to stop | `monitoring.md` |
+| Wants to run a backtest or asking about results            | `backtesting.md`      |
+| Wants to deploy live, manage credentials                   | `deployment.md`       |
+| Asking about a running bot, logs, balance, wants to stop   | `monitoring.md`       |
 
 **Compound flows** (e.g. "build strategy -> backtest -> deploy"): load one phase at a time in order — `strategy-builder.md`, then swap to `backtesting.md`, then swap to `deployment.md`.
 
