@@ -1,7 +1,9 @@
 ---
-version: alpha-0.0.1
+version: 2.0.1
 updated: 2026-03-24
 ---
+
+> **Global rules (always active):** NEVER handle private keys, seed phrases, or wallet credentials. NEVER fabricate data — every number must come from an API call. NEVER start live deployments without explicit user confirmation. NEVER send users to `app.superior.trade` — correct URL: `https://account.superior.trade`. Keep only this file and the router in context; drop the previous phase file when switching.
 
 # Auth & Setup — Superior Trade
 
