@@ -229,14 +229,33 @@ If the agent fails the same task 3+ times (e.g. strategy code keeps crashing, ba
 
 ### Backtest Workflow
 
-1. Build config + strategy code from user requirements
-2. `POST /v2/backtesting` — create
-3. `PUT /v2/backtesting/{id}/status` with `{"action": "start"}`
-4. Poll `GET /v2/backtesting/{id}/status` every 10s until `completed` or `failed` (1–10 min)
-5. `GET /v2/backtesting/{id}` — fetch full results; download `result_url` for detailed JSON
-6. Present summary: total trades, win rate, profit, drawdown, Sharpe ratio
-7. If failed, check `GET /v2/backtesting/{id}/logs`
-8. To cancel: `DELETE /v2/backtesting/{id}`
+#### Required Fields — Collect Before Creating
+
+Before building the config, the agent MUST confirm these three values with the user. If any is missing, ask for it explicitly — do not guess or use defaults silently.
+
+| Field | Config key | What to ask | Example |
+| --- | --- | --- | --- |
+| **Bet amount** | `stake_amount` | "How much USDC per trade?" | `100` |
+| **Starting balance** | `dry_run_wallet` | "What starting balance should the backtest simulate?" | `1000` |
+| **Backtest period** | `timerange` (top-level, not in config) | "What date range? (start and end)" | `{"start": "2025-06-01", "end": "2025-12-31"}` |
+
+> **`dry_run_wallet`** goes inside the `config` object. It sets the simulated account balance for the backtest. Without it, the engine uses an internal default which may not match the user's actual balance — always set it explicitly.
+>
+> **`stake_amount`** also goes inside `config`. Use a numeric value — avoid `"unlimited"` unless the user specifically requests it (see the `stake_amount: "unlimited"` warning below).
+
+The agent should also confirm the trading pair, timeframe, and strategy approach, but these are typically established during the strategy conversation. The three fields above are the ones users most often forget or leave ambiguous.
+
+#### Steps
+
+1. **Collect required fields** (stake amount, starting balance, backtest period) — ask for any the user hasn't provided
+2. Build config + strategy code from user requirements
+3. `POST /v2/backtesting` — create
+4. `PUT /v2/backtesting/{id}/status` with `{"action": "start"}`
+5. Poll `GET /v2/backtesting/{id}/status` every 10s until `completed` or `failed` (1–10 min)
+6. `GET /v2/backtesting/{id}` — fetch full results; download `result_url` for detailed JSON
+7. Present summary: total trades, win rate, profit, drawdown, Sharpe ratio
+8. If failed, check `GET /v2/backtesting/{id}/logs`
+9. To cancel: `DELETE /v2/backtesting/{id}`
 
 #### Result Interpretation
 
@@ -251,13 +270,30 @@ After status = `completed`, download the `result_url` JSON. Present these key me
 
 ### Deployment Workflow
 
-1. `POST /v2/deployment` with config, code, name
-2. `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid" }` — server assigns wallet automatically (**required** before live start; there is no paper/dry-run deployment mode)
-3. Run the pre-deployment checklist
-4. Show the live deployment confirmation summary and wait for explicit user confirmation
-5. `PUT /v2/deployment/{id}/status` → `{"action": "start"}`
-6. Monitor: `GET /v2/deployment/{id}/status`, `GET /v2/deployment/{id}/logs`
-7. Stop: `PUT /v2/deployment/{id}/status` → `{"action": "stop"}`
+#### Required Fields — Collect Before Creating
+
+Before building the deployment config, the agent MUST confirm these values with the user. If any is missing, ask for it explicitly.
+
+| Field | Config key | What to ask | Example |
+| --- | --- | --- | --- |
+| **Bet amount** | `stake_amount` | "How much USDC per trade?" | `100` |
+| **Max open trades** | `max_open_trades` | "How many concurrent positions?" | `3` |
+| **Stoploss** | `stoploss` | "What's your stoploss percentage?" | `-0.10` |
+
+The trading pair, timeframe, and strategy should already be established (often from a preceding backtest). The agent should also confirm the deployment name.
+
+> **Do NOT use `dry_run_wallet` in deployment configs** — it only applies to backtesting. Deployments trade with the user's actual wallet balance.
+
+#### Steps
+
+1. **Collect required fields** (stake amount, max open trades, stoploss) — ask for any the user hasn't provided
+2. `POST /v2/deployment` with config, code, name
+3. `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid" }` — server assigns wallet automatically (**required** before live start; there is no paper/dry-run deployment mode)
+4. Run the pre-deployment checklist
+5. Show the live deployment confirmation summary and wait for explicit user confirmation
+6. `PUT /v2/deployment/{id}/status` → `{"action": "start"}`
+7. Monitor: `GET /v2/deployment/{id}/status`, `GET /v2/deployment/{id}/logs`
+8. Stop: `PUT /v2/deployment/{id}/status` → `{"action": "stop"}`
 
 ### Pre-Deployment Checklist (MANDATORY)
 
@@ -399,6 +435,22 @@ Response: `{ "id": "string", "status": "string", "replicas": 1, "available_repli
 
 Does NOT return private keys. Response: `{ "id", "credentials_status": "stored | missing", "exchange", "wallet_address", "wallet_source": "main_trading_wallet | provided", "wallet_type": "main_wallet | agent_wallet", "agent_wallet_address" }`. If missing: `{ "credentials_status": "missing" }`.
 
+#### POST `/v2/deployment/{id}/exit` — Exit All Positions
+
+Closes all open orders and liquidates all open positions for the deployment's exchange account.
+
+**Requirement:** Deployment must be **stopped** before calling this.
+
+```json
+// Response (200)
+{ "id": "string", "status": "string", "orders_cancelled": 3, "positions_closed": 2 }
+
+// Response (400) — deployment still running or credentials missing
+{ "error": "invalid_request", "message": "..." }
+```
+
+**When to use:** If a stopped deployment still has open positions on Hyperliquid, call this endpoint to force-close them.
+
 #### DELETE `/v2/deployment/{id}`
 
 Closes all positions and orders on Hyperliquid before deleting. Response: `{ "message": "Deployment deleted" }`. Deleting stopped deployments may return 500 — safe to ignore.
@@ -439,6 +491,7 @@ The config object is a Freqtrade trading bot configuration. Do not include `api_
   "exchange": { "name": "hyperliquid", "pair_whitelist": ["BTC/USDC:USDC"] },
   "stake_currency": "USDC",
   "stake_amount": 100,
+  "dry_run_wallet": 1000,
   "timeframe": "5m",
   "max_open_trades": 3,
   "stoploss": -0.1,
@@ -475,7 +528,7 @@ Same as futures but omit `trading_mode` and `margin_mode`. Pairs use `BTC/USDC` 
 
 #### Additional Config Fields
 
-Beyond the examples above: `minimal_roi` (minutes-to-ROI map, e.g. `{"0": 0.10, "30": 0.05}`), `trailing_stop` (boolean), `trailing_stop_positive` (number), `entry_pricing.price_side` / `exit_pricing.price_side` (`"ask"`, `"bid"`, `"same"`, `"other"`), `pairlists` (`StaticPairList`, `VolumePairList`, etc.).
+Beyond the examples above: `dry_run_wallet` (number — simulated starting balance for backtests; do NOT use in deployment configs), `minimal_roi` (minutes-to-ROI map, e.g. `{"0": 0.10, "30": 0.05}`), `trailing_stop` (boolean), `trailing_stop_positive` (number), `entry_pricing.price_side` / `exit_pricing.price_side` (`"ask"`, `"bid"`, `"same"`, `"other"`), `pairlists` (`StaticPairList`, `VolumePairList`, etc.).
 
 ### Strategy Code Template
 
@@ -640,6 +693,16 @@ When a bot crashes, it may leave open positions that lock up margin. Strategy co
 ### Backtest `limit_exceeded` Error
 
 If you get a `limit_exceeded` error when creating a backtest, the user has hit the concurrent backtest limit. Delete completed/failed backtests first: `DELETE /v2/backtesting/{id}`
+
+### Scheduled Tasks / Cron
+
+When helping the user set up a cron job or scheduled task that calls the Superior Trade API (e.g., periodic balance checks, automated stop/start), the agent MUST:
+
+1. **Identify which API key to use** — confirm the user's `SUPERIOR_TRADE_API_KEY` and ensure it will be available in the cron environment (env var, secrets manager, etc.)
+2. **Set the API key in the cron configuration** — include the `x-api-key` header in every scheduled API call
+3. **Warn about key expiry** — if the API key has an expiration date, remind the user to rotate it before it expires
+
+Do not assume the cron environment has access to the same credentials as the user's interactive session. Always explicitly configure the API key for the scheduled task.
 
 ### Timezone Reminder
 
