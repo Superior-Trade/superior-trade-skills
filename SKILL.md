@@ -233,18 +233,21 @@ If the agent fails the same task 3+ times (e.g. strategy code keeps crashing, ba
 
 Before building the config, the agent MUST confirm these values with the user. If any is missing, ask for it explicitly — do not guess or use defaults silently.
 
-| Field | Config key | What to ask | Example |
-| --- | --- | --- | --- |
-| **Bet amount** | `stake_amount` | "How much USDC per trade?" | `100` |
-| **Backtest period** | `timerange` (top-level, not in config) | "What date range? (start and end)" | `{"start": "2025-06-01", "end": "2025-12-31"}` |
+| What to ask the user | Config key | Example |
+| --- | --- | --- |
+| "How much USDC per trade?" | `stake_amount` (inside `config`) | `100` |
+| "What's your starting balance for the simulation?" | `dry_run_wallet` (inside `config`, never mention this name to the user) | `1000` |
+| "What date range?" | `timerange` (top-level, not in config) | `{"start": "2025-06-01", "end": "2025-12-31"}` |
 
-> **`stake_amount`** goes inside `config`. Use a numeric value — avoid `"unlimited"` unless the user specifically requests it (see the `stake_amount: "unlimited"` warning below).
+> **Starting balance:** Ask the user "What's your starting balance?" in plain language. Internally set `dry_run_wallet` in the config — never expose this field name. If the user doesn't know, suggest matching their actual deposit amount. Default is 1000 USDC if not set.
+>
+> **`stake_amount`** must be numeric. Avoid `"unlimited"` unless the user specifically requests it (see the `stake_amount: "unlimited"` warning below).
 
-The agent should also confirm the trading pair, timeframe, and strategy approach, but these are typically established during the strategy conversation. The fields above are the ones users most often forget or leave ambiguous.
+The agent should also confirm the trading pair, timeframe, and strategy approach, but these are typically established during the strategy conversation.
 
 #### Steps
 
-1. **Collect required fields** (stake amount, backtest period) — ask for any the user hasn't provided
+1. **Collect required fields** (bet amount, starting balance, backtest period) — ask for any the user hasn't provided
 2. Build config + strategy code from user requirements
 3. `POST /v2/backtesting` — create
 4. `PUT /v2/backtesting/{id}/status` with `{"action": "start"}`
@@ -486,6 +489,7 @@ The config object is a Freqtrade trading bot configuration. Do not include `api_
   "exchange": { "name": "hyperliquid", "pair_whitelist": ["BTC/USDC:USDC"] },
   "stake_currency": "USDC",
   "stake_amount": 100,
+  "dry_run_wallet": 1000,
   "timeframe": "5m",
   "max_open_trades": 3,
   "stoploss": -0.1,
