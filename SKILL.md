@@ -1,6 +1,6 @@
 ---
 name: Superior Trade
-version: 3.0.3
+version: 3.0.4
 updated: 2026-03-24
 description: "Backtest and deploy trading strategies on Superior Trade's managed cloud."
 homepage: https://account.superior.trade
@@ -256,9 +256,11 @@ After status = `completed`, download the `result_url` JSON. Present these key me
 ### Deployment Workflow
 
 1. `POST /v2/deployment` with config, code, name
-2. `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid" }` — server assigns wallet automatically. **Skip this step for dry-run/paper mode** — a deployment without credentials runs in dry-run mode (simulated trades, no real funds)
+2. **Ask the user: live or dry-run?**
+   - **Live:** `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid" }` — server assigns wallet automatically
+   - **Dry-run:** Skip the credentials step — the deployment runs in simulation mode (no real funds)
 3. Run the pre-deployment checklist
-4. Show the live deployment confirmation summary and wait for explicit user confirmation
+4. Show the deployment confirmation summary and wait for explicit user confirmation
 5. `PUT /v2/deployment/{id}/status` → `{"action": "start"}`
 6. Monitor: `GET /v2/deployment/{id}/status`, `GET /v2/deployment/{id}/logs`
 7. Stop: `PUT /v2/deployment/{id}/status` → `{"action": "stop"}`
