@@ -1,6 +1,6 @@
 ---
 name: Superior Trade
-version: 3.0.0
+version: 3.0.2
 updated: 2026-03-24
 description: "Backtest and deploy trading strategies on Superior Trade's managed cloud."
 homepage: https://account.superior.trade
@@ -37,7 +37,7 @@ API client skill for backtesting and deploying trading strategies on Superior Tr
 
 > **IMPORTANT:** The correct URL is **https://account.superior.trade** — NOT `app.superior.trade`. Never send users to `app.superior.trade`.
 
-Use `SUPERIOR_TRADE_API_KEY` from the environment or credential manager — never ask users to paste it into chat.
+Use `SUPERIOR_TRADE_API_KEY` from the environment or credential manager.
 
 When a user needs to get their API key:
 
@@ -46,7 +46,7 @@ When a user needs to get their API key:
 3. Complete onboarding — a trading wallet is created for you and shown on the dashboard
 4. Deposit USDC to your wallet address (on Arbitrum)
 5. Create an API key (`st_live_...`) from the dashboard
-6. Add it as `SUPERIOR_TRADE_API_KEY` in your agent's environment/credential settings — **do not paste it into the chat**
+6. Add it as `SUPERIOR_TRADE_API_KEY` in your agent's environment/credential settings
 
 If the `SUPERIOR_TRADE_API_KEY` env var is already set, use it directly in the `x-api-key` header without prompting the user.
 
@@ -64,7 +64,7 @@ If the `SUPERIOR_TRADE_API_KEY` env var is already set, use it directly in the `
 
 ### Security & Permissions
 
-This skill requires exactly **one credential**: an `x-api-key` header value. The only secret the agent uses is `SUPERIOR_TRADE_API_KEY` from the environment. Read it from the env var — never ask users to paste it in chat.
+This skill requires exactly **one credential**: an `x-api-key` header value. The only secret the agent uses is `SUPERIOR_TRADE_API_KEY` from the environment.
 
 **Security rules (non-negotiable):**
 
@@ -74,7 +74,7 @@ This skill requires exactly **one credential**: an `x-api-key` header value. The
 4. **NEVER** tell users to deposit funds to the agent wallet address
 5. **NEVER** fabricate wallet balances, API responses, or trade results
 6. **NEVER** start a live deployment without explicit user confirmation
-7. **NEVER** mention the underlying trading engine name, internal class names/imports, infrastructure details (containers, proxies, namespaces), or wallet provider names — instead say "strategy", "the bot", "the trading engine", "platform-managed wallet". Show raw code only when the user requests it.
+7. **Prefer user-friendly language** over internal technical names when speaking conversationally. Say "strategy", "the bot", or "the trading engine" instead of referencing internal class names or infrastructure details. This is a UX preference — if the user asks about the underlying technology, answer honestly (the platform uses Freqtrade for strategy execution on Hyperliquid).
 8. **NEVER** send users to `app.superior.trade` — the correct URL is `https://account.superior.trade`
 
 > **Key scope notice:** The API key can create and start live trading deployments that execute real trades using the user's platform-managed trading wallet. It cannot withdraw funds, export private keys, or move money. Users should confirm scope with Superior Trade and backtest their strategy first.
@@ -178,15 +178,16 @@ HIP3 assets (stocks, commodities, indices) are perpetual futures.
 
 **Pair format:** `PROTOCOL-TICKER/QUOTE:SETTLE` — the separator between protocol and ticker is always **`-`** (hyphen).
 
-| Protocol | Asset Types                               | Stake Currency | Examples                                   |
-| -------- | ----------------------------------------- | -------------- | ------------------------------------------ |
-| `XYZ-`   | US/KR stocks, metals, currencies, indices | USDC           | `XYZ-AAPL/USDC:USDC`, `XYZ-GOLD/USDC:USDC` |
-| `CASH-`  | Commodities, stocks                       | USDT0          | `CASH-GOLD/USDT0:USDT0`                    |
-| `FLX-`   | Commodities, stocks, crypto               | USDC or USDH   | `FLX-GOLD/USDH:USDH`                       |
-| `KM-`    | Stocks, indices, bonds                    | USDH           | `KM-GOOGL/USDH:USDH`                       |
-| `HYNA-`  | Leveraged crypto                          | USDC or USDE   | `HYNA-SOL/USDE:USDE`                       |
+| Protocol | Dex name | Asset Types                               | Stake Currency | Examples                                   |
+| -------- | -------- | ----------------------------------------- | -------------- | ------------------------------------------ |
+| `XYZ-`   | `xyz`    | US/KR stocks, metals, currencies, indices | USDC           | `XYZ-AAPL/USDC:USDC`, `XYZ-GOLD/USDC:USDC` |
+| `CASH-`  | `cash`   | Stocks, commodities                       | USDT0          | `CASH-GOLD/USDT0:USDT0`                    |
+| `FLX-`   | `flx`    | Commodities, metals, crypto               | USDH           | `FLX-GOLD/USDH:USDH`                       |
+| `KM-`    | `km`     | Stocks, indices, bonds                    | USDH           | `KM-GOOGL/USDH:USDH`                       |
+| `HYNA-`  | `hyna`   | Leveraged crypto, metals                  | USDE           | `HYNA-SOL/USDE:USDE`                        |
+| `VNTL-`  | `vntl`   | Sector indices, pre-IPO                   | USDH           | `VNTL-SPACEX/USDH:USDH`                     |
 
-**XYZ tickers (USDC):** AAPL, AMZN, GOOGL, META, TSLA, NFLX, HOOD, PLTR, INTC, RIVN, COIN, SNDK, BABA, GOLD, SILVER, COPPER, PLATINUM, PALLADIUM, JPY, XYZ100, HYUNDAI, SKHX, SMSN
+**XYZ tickers (USDC):** AAPL, ALUMINIUM, AMD, AMZN, BABA, BRENTOIL, CL, COIN, COPPER, COST, CRCL, CRWV, DKNG, DXY, EUR, EWJ, EWY, GME, GOLD, GOOGL, HIMS, HOOD, HYUNDAI, INTC, JP225, JPY, KIOXIA, KR200, LLY, META, MSFT, MSTR, MU, NATGAS, NFLX, NVDA, ORCL, PALLADIUM, PLATINUM, PLTR, RIVN, SILVER, SKHX, SMSN, SNDK, SOFTBANK, SP500, TSLA, TSM, URANIUM, URNM, USAR, VIX, XYZ100
 
 **Data:** XYZ from ~November 2025, KM/CASH/FLX from ~February 2026. Timeframes: 1m, 3m, 5m, 15m, 30m, 1h (also 2h, 4h, 8h, 12h, 1d, 3d, 1w for some). Funding rate data at 1h.
 
@@ -194,7 +195,10 @@ HIP3 assets (stocks, commodities, indices) are perpetual futures.
 
 ### Pair Discovery
 
-Verify pairs exist: `POST https://api.hyperliquid.xyz/info` → `{"type":"meta"}` — check the `universe` array. The API returns raw coin names (e.g. `XYZ/GOLD`) — convert to CCXT format with hyphen separator (`XYZ-GOLD/USDC:USDC`) before showing to users or using in config.
+- **Standard perps:** `{"type":"meta"}` — check `universe[].name`
+- **HIP3 pairs:** `{"type":"meta", "dex":"xyz"}` (or `"cash"`, `"km"`, etc.) — HIP3 pairs are NOT in the default meta call
+- **List all dexes:** `{"type":"perpDexs"}`
+- **Name conversion:** API returns `xyz:AAPL` → CCXT format `XYZ-AAPL/USDC:USDC` (uppercase prefix, colon→hyphen)
 
 ### Unified vs Legacy Account Mode
 
@@ -266,7 +270,7 @@ Before `PUT /v2/deployment/{id}/status` → `{"action":"start"}`:
 1. **Credentials stored** — `GET /v2/deployment/{id}` → `credentials_status: "stored"`. If not, call `POST /v2/deployment/{id}/credentials`.
 2. **Identify wallets** — `GET /v2/deployment/{id}/credentials` → note `wallet_address` (agent wallet) and `agent_wallet_address`.
 3. **Funds available in main wallet** — Check the **main wallet** (platform-managed trading wallet), NOT the agent wallet. Agent wallet having $0 is normal. Query `clearinghouseState` + `spotClearinghouseState` on the public Hyperliquid info endpoint (read-only, sends public wallet address only — no secrets).
-4. **Pair is tradeable** — `POST https://api.hyperliquid.xyz/info` → `{"type":"meta"}` and verify pair exists.
+4. **Pair is tradeable** — `POST https://api.hyperliquid.xyz/info` → `{"type":"meta"}` for standard perps, or `{"type":"meta", "dex":"xyz"}` (or the relevant dex name) for HIP3 pairs. Verify the coin name exists in the `universe` array.
 
 Do NOT skip any step or assume it passed without the API call.
 
@@ -644,4 +648,3 @@ If you get a `limit_exceeded` error when creating a backtest, the user has hit t
 ### Timezone Reminder
 
 All API timestamps are in **UTC (ISO8601)**. Convert to the user's local timezone when presenting times conversationally. If timezone is unknown, show both UTC and ask.
-
