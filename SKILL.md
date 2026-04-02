@@ -191,7 +191,7 @@ HIP3 assets (stocks, commodities, indices) are perpetual futures.
 
 **Data:** XYZ from ~November 2025, KM/CASH/FLX from ~February 2026. Timeframes: 1m, 3m, 5m, 15m, 30m, 1h (also 2h, 4h, 8h, 12h, 1d, 3d, 1w for some). Funding rate data at 1h.
 
-**Trading rules:** HIP3 assets are futures-only — always use `trading_mode: "futures"` and `margin_mode: "isolated"`. XYZ pairs use `stake_currency: "USDC"`. Stock-based assets may have reduced liquidity outside US market hours.
+**Trading rules:** HIP3 assets are futures-only — always use `trading_mode: "futures"`. Most HIP-3 assets have `onlyIsolated: true` and MUST use `margin_mode: "isolated"`. Always call `pair_validate` first and use the returned `recommended_margin_mode` value — do NOT default to `"cross"`. XYZ pairs use `stake_currency: "USDC"`. Stock-based assets may have reduced liquidity outside US market hours.
 
 ### Pair Discovery
 
@@ -685,3 +685,7 @@ If you get a `limit_exceeded` error when creating a backtest, the user has hit t
 ### Timezone Reminder
 
 All API timestamps are in **UTC (ISO8601)**. Convert to the user's local timezone when presenting times conversationally. If timezone is unknown, show both UTC and ask.
+
+## Community & Support
+
+- **Discord:** https://discord.com/invite/DX4HfPrdFQ — Join for tech support, feature requests, and suggestions.
