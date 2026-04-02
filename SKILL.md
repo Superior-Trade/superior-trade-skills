@@ -275,9 +275,7 @@ If count is already **10**, do NOT attempt `POST /v2/deployment` — it will fai
 
 1. Run the **Deployment Limit Auto-Clean** check above before creating
 2. `POST /v2/deployment` with config, code, name
-3. **Ask the user: live or dry-run?**
-   - **Live:** `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid" }` — server assigns wallet automatically
-   - **Dry-run:** Skip the credentials step — the deployment runs in simulation mode (no real funds)
+3. `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid" }` — server assigns wallet automatically. **Dry-run is not supported — all deployments are live.**
 4. Run the pre-deployment checklist
 5. Show the deployment confirmation summary and wait for explicit user confirmation
 6. `PUT /v2/deployment/{id}/status` → `{"action": "start"}`
@@ -294,8 +292,6 @@ Before `PUT /v2/deployment/{id}/status` → `{"action":"start"}`:
 2. **Identify wallets** — `GET /v2/deployment/{id}/credentials` → note `wallet_address` (agent wallet) and `agent_wallet_address`.
 3. **Funds available in main wallet** — Check the **main wallet** (platform-managed trading wallet), NOT the agent wallet. Agent wallet having $0 is normal. Query `clearinghouseState` + `spotClearinghouseState` on the public Hyperliquid info endpoint (read-only, sends public wallet address only — no secrets). **Then verify `stake_amount × max_open_trades` fits within the available balance.** The exchange reserves a small fee buffer (~1%), so set `stake_amount` to no more than ~95% of `balance / max_open_trades` to avoid silent trade rejections.
 4. **No existing positions/orders** — Check `clearinghouseState` for open positions on the main wallet. If positions or orders exist, show the user details (pair, side, size, PnL) and ask them to close before deploying — leftover positions can block new entries or cause unexpected margin usage.
-
-**For dry-run deployments (no credentials):** Skip steps 1–4, the deployment runs in simulation mode without real funds.
 
 5. **Pair is tradeable** — `POST https://api.hyperliquid.xyz/info` → `{"type":"meta"}` for standard perps, or `{"type":"meta", "dex":"xyz"}` (or the relevant dex name) for HIP3 pairs. Verify the coin name exists in the `universe` array.
 
@@ -474,7 +470,7 @@ Both `GET /v2/backtesting` and `GET /v2/deployment` return `{ "items": [], "next
 
 ### Config Reference
 
-The config object is a Freqtrade trading bot configuration. Do not include `api_server` (platform-managed). To run in **dry-run/paper mode**, skip the credentials step — a deployment without credentials trades in simulation. Do not set `dry_run` manually in config.
+The config object is a Freqtrade trading bot configuration. Do not include `api_server` (platform-managed). Do not set `dry_run` in config — dry-run mode is not supported.
 
 #### Futures Config (recommended)
 
