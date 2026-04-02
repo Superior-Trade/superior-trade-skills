@@ -1,7 +1,7 @@
 ---
 name: Superior Trade
-version: 3.0.0
-updated: 2026-03-24
+version: 3.0.9
+updated: 2026-04-02
 description: "Backtest and deploy trading strategies on Superior Trade's managed cloud."
 homepage: https://account.superior.trade
 source: https://github.com/Superior-Trade
@@ -37,7 +37,7 @@ API client skill for backtesting and deploying trading strategies on Superior Tr
 
 > **IMPORTANT:** The correct URL is **https://account.superior.trade** — NOT `app.superior.trade`. Never send users to `app.superior.trade`.
 
-Use `SUPERIOR_TRADE_API_KEY` from the environment or credential manager — never ask users to paste it into chat.
+Use `SUPERIOR_TRADE_API_KEY` from the environment or credential manager.
 
 When a user needs to get their API key:
 
@@ -46,7 +46,7 @@ When a user needs to get their API key:
 3. Complete onboarding — a trading wallet is created for you and shown on the dashboard
 4. Deposit USDC to your wallet address (on Arbitrum)
 5. Create an API key (`st_live_...`) from the dashboard
-6. Add it as `SUPERIOR_TRADE_API_KEY` in your agent's environment/credential settings — **do not paste it into the chat**
+6. Add it as `SUPERIOR_TRADE_API_KEY` in your agent's environment/credential settings
 
 If the `SUPERIOR_TRADE_API_KEY` env var is already set, use it directly in the `x-api-key` header without prompting the user.
 
@@ -64,7 +64,7 @@ If the `SUPERIOR_TRADE_API_KEY` env var is already set, use it directly in the `
 
 ### Security & Permissions
 
-This skill requires exactly **one credential**: an `x-api-key` header value. The only secret the agent uses is `SUPERIOR_TRADE_API_KEY` from the environment. Read it from the env var — never ask users to paste it in chat.
+This skill requires exactly **one credential**: an `x-api-key` header value. The only secret the agent uses is `SUPERIOR_TRADE_API_KEY` from the environment.
 
 **Security rules (non-negotiable):**
 
@@ -74,7 +74,7 @@ This skill requires exactly **one credential**: an `x-api-key` header value. The
 4. **NEVER** tell users to deposit funds to the agent wallet address
 5. **NEVER** fabricate wallet balances, API responses, or trade results
 6. **NEVER** start a live deployment without explicit user confirmation
-7. **NEVER** mention the underlying trading engine name, internal class names/imports, infrastructure details (containers, proxies, namespaces), or wallet provider names — instead say "strategy", "the bot", "the trading engine", "platform-managed wallet". Show raw code only when the user requests it.
+7. **Prefer user-friendly language** over internal technical names when speaking conversationally. Say "strategy", "the bot", or "the trading engine" instead of referencing internal class names or infrastructure details. This is a UX preference — if the user asks about the underlying technology, answer honestly (the platform uses Freqtrade for strategy execution on Hyperliquid).
 8. **NEVER** send users to `app.superior.trade` — the correct URL is `https://account.superior.trade`
 
 > **Key scope notice:** The API key can create and start live trading deployments that execute real trades using the user's platform-managed trading wallet. It cannot withdraw funds, export private keys, or move money. Users should confirm scope with Superior Trade and backtest their strategy first.
@@ -178,15 +178,16 @@ HIP3 assets (stocks, commodities, indices) are perpetual futures.
 
 **Pair format:** `PROTOCOL-TICKER/QUOTE:SETTLE` — the separator between protocol and ticker is always **`-`** (hyphen).
 
-| Protocol | Asset Types                               | Stake Currency | Examples                                   |
-| -------- | ----------------------------------------- | -------------- | ------------------------------------------ |
-| `XYZ-`   | US/KR stocks, metals, currencies, indices | USDC           | `XYZ-AAPL/USDC:USDC`, `XYZ-GOLD/USDC:USDC` |
-| `CASH-`  | Commodities, stocks                       | USDT0          | `CASH-GOLD/USDT0:USDT0`                    |
-| `FLX-`   | Commodities, stocks, crypto               | USDC or USDH   | `FLX-GOLD/USDH:USDH`                       |
-| `KM-`    | Stocks, indices, bonds                    | USDH           | `KM-GOOGL/USDH:USDH`                       |
-| `HYNA-`  | Leveraged crypto                          | USDC or USDE   | `HYNA-SOL/USDE:USDE`                       |
+| Protocol | Dex name | Asset Types                               | Stake Currency | Examples                                   |
+| -------- | -------- | ----------------------------------------- | -------------- | ------------------------------------------ |
+| `XYZ-`   | `xyz`    | US/KR stocks, metals, currencies, indices | USDC           | `XYZ-AAPL/USDC:USDC`, `XYZ-GOLD/USDC:USDC` |
+| `CASH-`  | `cash`   | Stocks, commodities                       | USDT0          | `CASH-GOLD/USDT0:USDT0`                    |
+| `FLX-`   | `flx`    | Commodities, metals, crypto               | USDH           | `FLX-GOLD/USDH:USDH`                       |
+| `KM-`    | `km`     | Stocks, indices, bonds                    | USDH           | `KM-GOOGL/USDH:USDH`                       |
+| `HYNA-`  | `hyna`   | Leveraged crypto, metals                  | USDE           | `HYNA-SOL/USDE:USDE`                       |
+| `VNTL-`  | `vntl`   | Sector indices, pre-IPO                   | USDH           | `VNTL-SPACEX/USDH:USDH`                    |
 
-**XYZ tickers (USDC):** AAPL, AMZN, GOOGL, META, TSLA, NFLX, HOOD, PLTR, INTC, RIVN, COIN, SNDK, BABA, GOLD, SILVER, COPPER, PLATINUM, PALLADIUM, JPY, XYZ100, HYUNDAI, SKHX, SMSN
+**XYZ tickers (USDC):** AAPL, ALUMINIUM, AMD, AMZN, BABA, BRENTOIL, CL, COIN, COPPER, COST, CRCL, CRWV, DKNG, DXY, EUR, EWJ, EWY, GME, GOLD, GOOGL, HIMS, HOOD, HYUNDAI, INTC, JP225, JPY, KIOXIA, KR200, LLY, META, MSFT, MSTR, MU, NATGAS, NFLX, NVDA, ORCL, PALLADIUM, PLATINUM, PLTR, RIVN, SILVER, SKHX, SMSN, SNDK, SOFTBANK, SP500, TSLA, TSM, URANIUM, URNM, USAR, VIX, XYZ100
 
 **Data:** XYZ from ~November 2025, KM/CASH/FLX from ~February 2026. Timeframes: 1m, 3m, 5m, 15m, 30m, 1h (also 2h, 4h, 8h, 12h, 1d, 3d, 1w for some). Funding rate data at 1h.
 
@@ -194,25 +195,10 @@ HIP3 assets (stocks, commodities, indices) are perpetual futures.
 
 ### Pair Discovery
 
-Before using a pair, verify it exists by querying the correct Hyperliquid dex. **HIP3 assets are NOT on the main dex** — you must query the specific sub-dex.
-
-```
-POST https://api.hyperliquid.xyz/info
-```
-
-| What to check | Request body | Where to look |
-| --- | --- | --- |
-| **Crypto perps** (BTC, ETH, SOL...) | `{"type": "meta"}` | `universe[].name` |
-| **Spot** (PURR, etc.) | `{"type": "spotMeta"}` | `universe[].name` + `tokens[]` |
-| **HIP3 — XYZ** (GOLD, AAPL, TSLA...) | `{"type": "meta", "dex": "xyz"}` | `universe[].name` |
-| **HIP3 — CASH** | `{"type": "meta", "dex": "cash"}` | `universe[].name` |
-| **HIP3 — FLX** | `{"type": "meta", "dex": "flx"}` | `universe[].name` |
-| **HIP3 — KM** | `{"type": "meta", "dex": "km"}` | `universe[].name` |
-| **HIP3 — HYNA** | `{"type": "meta", "dex": "hyna"}` | `universe[].name` |
-
-> **CRITICAL:** If the user asks to trade GOLD, AAPL, TSLA, or any non-crypto asset, you MUST query `{"type": "meta", "dex": "xyz"}` (or the appropriate dex). Querying `{"type": "meta"}` without `"dex"` only returns crypto perps and will NOT find HIP3 assets.
-
-The API returns raw names like `xyz:GOLD` — convert to CCXT format with hyphen: `XYZ-GOLD/USDC:USDC`. Filter out `"isDelisted": true`.
+- **Standard perps:** `{"type":"meta"}` — check `universe[].name`
+- **HIP3 pairs:** `{"type":"meta", "dex":"xyz"}` (or `"cash"`, `"km"`, etc.) — HIP3 pairs are NOT in the default meta call
+- **List all dexes:** `{"type":"perpDexs"}`
+- **Name conversion:** API returns `xyz:AAPL` → CCXT format `XYZ-AAPL/USDC:USDC` (uppercase prefix, colon→hyphen)
 
 ### Unified vs Legacy Account Mode
 
@@ -225,11 +211,10 @@ Hyperliquid accounts may run in **unified mode** (single balance) or **legacy mo
 
 - **Verification-first:** Every factual claim about balance, wallet status, or deployment health MUST be backed by an API call in the current turn. NEVER assume → report → verify later.
 - **Anti-hallucination:** If you can't call the API, say "I haven't checked yet." Every number must come from a real response.
-- **API key validation:** Before making API calls, verify the key starts with `st_live_` and is the expected length. If the first call returns 401, tell the user the key appears invalid or truncated — ask them to re-check it rather than continuing with a bad key.
 - **Conversational:** Make API calls directly and present results conversationally. Show raw payloads only on request.
 - **Backtesting:** Build config + code from user intent → create → start → poll → present results — all automatically.
 - **Deployment:** Create → store credentials → run checklist → show summary → get confirmation → start.
-- **Proactive:** Ask for missing info conversationally, one concern at a time. Warn if backtest results are poor before offering live deployment.
+- **Proactive:** Ask for missing info conversationally, one concern at a time. Always ask user to run a backtest before first live deployment.
 
 Check Hyperliquid balances with BOTH endpoints:
 
@@ -248,34 +233,14 @@ If the agent fails the same task 3+ times (e.g. strategy code keeps crashing, ba
 
 ### Backtest Workflow
 
-#### Required Fields — Collect Before Creating
-
-Before building the config, the agent MUST confirm these values with the user. If any is missing, ask for it explicitly — do not guess or use defaults silently.
-
-| What to ask the user | Config key | Example |
-| --- | --- | --- |
-| "How much USDC per trade?" | `stake_amount` (inside `config`) | `100` |
-| "What's your starting balance for the simulation?" | `dry_run_wallet` (inside `config`, never mention this name to the user) | `1000` |
-| "What date range?" | `timerange` (top-level, not in config) | `{"start": "2025-06-01", "end": "2025-12-31"}` |
-
-> **Starting balance:** Ask the user "What's your starting balance?" in plain language. Internally set `dry_run_wallet` in the config — never expose this field name. If the user doesn't know, suggest matching their actual deposit amount. Default is 1000 USDC if not set.
->
-> **`stake_amount`** must be numeric. Avoid `"unlimited"` unless the user specifically requests it (see the `stake_amount: "unlimited"` warning below).
-
-The agent should also confirm the trading pair, timeframe, and strategy approach, but these are typically established during the strategy conversation.
-
-#### Steps
-
-1. **Collect required fields** (bet amount, starting balance, backtest period) — ask for any the user hasn't provided
-2. **Validate the pair exists** — query the correct Hyperliquid dex (see Pair Discovery). Stop and tell the user if the pair is not found or delisted. Confirm the exact CCXT-format pair name to use.
-3. Build config + strategy code from user requirements
-4. `POST /v2/backtesting` — create
-5. `PUT /v2/backtesting/{id}/status` with `{"action": "start"}`
-6. Poll `GET /v2/backtesting/{id}/status` every 10s until `completed` or `failed` (1–10 min)
-7. `GET /v2/backtesting/{id}` — fetch full results; download `result_url` for detailed JSON
-8. Present summary: total trades, win rate, profit, drawdown, Sharpe ratio
-9. If failed, check `GET /v2/backtesting/{id}/logs`
-10. To cancel: `DELETE /v2/backtesting/{id}`
+1. Build config + strategy code from user requirements
+2. `POST /v2/backtesting` — create with config, code, and timerange (`{ "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" }`). If the dates are invalid or omitted, the server picks a suitable duration based on the timeframe.
+3. `PUT /v2/backtesting/{id}/status` with `{"action": "start"}`
+4. Poll `GET /v2/backtesting/{id}/status` every 10s until `completed` or `failed` (1–10 min)
+5. `GET /v2/backtesting/{id}` — fetch full results; download `result_url` for detailed JSON
+6. Present summary: total trades, win rate, profit, drawdown, Sharpe ratio
+7. If failed, check `GET /v2/backtesting/{id}/logs`
+8. To cancel: `DELETE /v2/backtesting/{id}`
 
 #### Result Interpretation
 
@@ -288,28 +253,33 @@ After status = `completed`, download the `result_url` JSON. Present these key me
 - **Sharpe ratio** — risk-adjusted return (>1.0 good, >2.0 excellent)
 - **Average trade duration** — how long positions are held
 
+**Before suggesting deployment**, always run a backtest first. If the backtest produced **zero trades** over a timerange that should have generated signals (e.g. weeks on a 5m timeframe), do not offer deployment — the strategy or pair likely has an issue. If PnL is **negative**, note the timerange may be unsuitable but don't dismiss the strategy outright. If PnL is **positive**, present results without overpromising — strong backtest fit can indicate overfitting. Stay neutral and let the user decide.
+
+### Deployment Limit Auto-Clean
+
+The platform enforces a **maximum of 10 deployments**. Before creating a new deployment, the agent MUST proactively check the current count and clean up if needed — do NOT wait for a `limit_exceeded` error.
+
+**Pre-create check (mandatory before `POST /v2/deployment`):**
+
+1. `GET /v2/deployment` — fetch all deployments, paginating until `nextCursor` is null
+2. Count total deployments. If count is **8 or more**:
+   a. Show the user a table: name, status, created date for each deployment
+   b. Ask: "You have [n]/10 deployments. Which stopped/unused ones can I delete to make room?"
+   c. Wait for explicit selection or approval
+   d. `DELETE /v2/deployment/{id}` for each approved — note: this closes all positions/orders first
+3. Only proceed to create once count is **9 or fewer** (leaving room for the new one)
+
+If count is already **10**, do NOT attempt `POST /v2/deployment` — it will fail. Show the list and require cleanup first.
+
 ### Deployment Workflow
 
-#### Required Fields — Collect Before Creating
-
-Before building the deployment config, the agent MUST confirm these values with the user. If any is missing, ask for it explicitly.
-
-| Field | Config key | What to ask | Example |
-| --- | --- | --- | --- |
-| **Bet amount** | `stake_amount` | "How much USDC per trade?" | `100` |
-| **Max open trades** | `max_open_trades` | "How many concurrent positions?" | `3` |
-| **Stoploss** | `stoploss` | "What's your stoploss percentage?" | `-0.10` |
-
-The trading pair, timeframe, and strategy should already be established (often from a preceding backtest). The agent should also confirm the deployment name.
-
-#### Steps
-
-1. **Collect required fields** (stake amount, max open trades, stoploss) — ask for any the user hasn't provided
-2. **Validate the pair exists** — query the correct Hyperliquid dex (see Pair Discovery). Stop and tell the user if the pair is not found or delisted. Confirm the exact CCXT-format pair name to use.
-3. `POST /v2/deployment` with config, code, name
-3. `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid" }` — server assigns wallet automatically (**required** before live start; there is no paper/dry-run deployment mode)
+1. Run the **Deployment Limit Auto-Clean** check above before creating
+2. `POST /v2/deployment` with config, code, name
+3. **Ask the user: live or dry-run?**
+   - **Live:** `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid" }` — server assigns wallet automatically
+   - **Dry-run:** Skip the credentials step — the deployment runs in simulation mode (no real funds)
 4. Run the pre-deployment checklist
-5. Show the live deployment confirmation summary and wait for explicit user confirmation
+5. Show the deployment confirmation summary and wait for explicit user confirmation
 6. `PUT /v2/deployment/{id}/status` → `{"action": "start"}`
 7. Monitor: `GET /v2/deployment/{id}/status`, `GET /v2/deployment/{id}/logs`
 8. Stop: `PUT /v2/deployment/{id}/status` → `{"action": "stop"}`
@@ -318,11 +288,16 @@ The trading pair, timeframe, and strategy should already be established (often f
 
 Before `PUT /v2/deployment/{id}/status` → `{"action":"start"}`:
 
+**For live deployments (credentials stored):**
+
 1. **Credentials stored** — `GET /v2/deployment/{id}` → `credentials_status: "stored"`. If not, call `POST /v2/deployment/{id}/credentials`.
-2. **Pair is tradeable** — `POST https://api.hyperliquid.xyz/info` with the appropriate body for the asset type (see Pair Discovery). Verify the pair is in `universe[]` and NOT delisted. Use the exact CCXT-format name in the config.
-3. **Identify wallets** — `GET /v2/deployment/{id}/credentials` → note `wallet_address` (agent wallet) and `agent_wallet_address`.
-3. **Funds available in main wallet** — Check the **main wallet** (platform-managed trading wallet), NOT the agent wallet. Agent wallet having $0 is normal. Query `clearinghouseState` + `spotClearinghouseState` on the public Hyperliquid info endpoint (read-only, sends public wallet address only — no secrets).
-4. **Pair is tradeable** — `POST https://api.hyperliquid.xyz/info` → `{"type":"meta"}` and verify pair exists.
+2. **Identify wallets** — `GET /v2/deployment/{id}/credentials` → note `wallet_address` (agent wallet) and `agent_wallet_address`.
+3. **Funds available in main wallet** — Check the **main wallet** (platform-managed trading wallet), NOT the agent wallet. Agent wallet having $0 is normal. Query `clearinghouseState` + `spotClearinghouseState` on the public Hyperliquid info endpoint (read-only, sends public wallet address only — no secrets). **Then verify `stake_amount × max_open_trades` fits within the available balance.** The exchange reserves a small fee buffer (~1%), so set `stake_amount` to no more than ~95% of `balance / max_open_trades` to avoid silent trade rejections.
+4. **No existing positions/orders** — Check `clearinghouseState` for open positions on the main wallet. If positions or orders exist, show the user details (pair, side, size, PnL) and ask them to close before deploying — leftover positions can block new entries or cause unexpected margin usage.
+
+**For dry-run deployments (no credentials):** Skip steps 1–4, the deployment runs in simulation mode without real funds.
+
+5. **Pair is tradeable** — `POST https://api.hyperliquid.xyz/info` → `{"type":"meta"}` for standard perps, or `{"type":"meta", "dex":"xyz"}` (or the relevant dex name) for HIP3 pairs. Verify the coin name exists in the `universe` array.
 
 Do NOT skip any step or assume it passed without the API call.
 
@@ -339,6 +314,8 @@ Do NOT skip any step or assume it passed without the API call.
 // Response (201)
 { "id": "string", "status": "pending", "message": "Backtest created. Call PUT /:id/status with action \"start\" to begin." }
 ```
+
+`timerange` specifies the historical period to backtest against. Dates are validated against available data — the server returns `invalid_timerange` if the requested period is outside what's available. If invalid dates are provided, the server falls back to a dynamic range based on the timeframe.
 
 #### PUT `/v2/backtesting/{id}/status` — Start Backtest
 
@@ -361,7 +338,6 @@ Response: `{ "id": "string", "status": "pending | running | completed | failed",
   "id": "string",
   "config": {},
   "code": "string",
-  "timerange": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" },
   "status": "pending | running | completed | failed",
   "results": null,
   "result_url": "https://storage.googleapis.com/... (signed URL, valid 7 days)",
@@ -457,9 +433,7 @@ Does NOT return private keys. Response: `{ "id", "credentials_status": "stored |
 
 #### POST `/v2/deployment/{id}/exit` — Exit All Positions
 
-Closes all open orders and liquidates all open positions for the deployment's exchange account.
-
-**Requirement:** Deployment must be **stopped** before calling this.
+Closes all open orders and liquidates all open positions. Deployment must be **stopped** first.
 
 ```json
 // Response (200)
@@ -468,8 +442,6 @@ Closes all open orders and liquidates all open positions for the deployment's ex
 // Response (400) — deployment still running or credentials missing
 { "error": "invalid_request", "message": "..." }
 ```
-
-**When to use:** If a stopped deployment still has open positions on Hyperliquid, call this endpoint to force-close them.
 
 #### DELETE `/v2/deployment/{id}`
 
@@ -502,7 +474,7 @@ Both `GET /v2/backtesting` and `GET /v2/deployment` return `{ "items": [], "next
 
 ### Config Reference
 
-The config object is a Freqtrade trading bot configuration. Do not include `api_server` (platform-managed). **Paper/dry-run trading is not offered** — do not set `dry_run` in user-facing config.
+The config object is a Freqtrade trading bot configuration. Do not include `api_server` (platform-managed). To run in **dry-run/paper mode**, skip the credentials step — a deployment without credentials trades in simulation. Do not set `dry_run` manually in config.
 
 #### Futures Config (recommended)
 
@@ -511,7 +483,6 @@ The config object is a Freqtrade trading bot configuration. Do not include `api_
   "exchange": { "name": "hyperliquid", "pair_whitelist": ["BTC/USDC:USDC"] },
   "stake_currency": "USDC",
   "stake_amount": 100,
-  "dry_run_wallet": 1000,
   "timeframe": "5m",
   "max_open_trades": 3,
   "stoploss": -0.1,
@@ -659,16 +630,6 @@ def adjust_trade_position(self, trade, current_time, current_rate,
 
 For DCA strategies: distinguish trades from orders ("X trades, Y buy orders, Z sell orders"), show per-order detail for at least the first trade, flag minimum order rejections or dust positions. Always download `result_url` for full order-level data. Skip breakdown for non-DCA strategies.
 
-### Silent Failure Modes (CRITICAL)
-
-Some failures produce **zero diagnostic output** — just heartbeats, no errors:
-
-1. **`stake_amount: "unlimited"` with insufficient balance** — bot runs, zero trades, zero errors
-2. **Main wallet has $0** — same symptom
-3. **Balance below effective minimum** — same symptom
-
-**Key signal:** Heartbeats but zero "Analyzing candle" or order lines after 5+ minutes = balance/stake issue.
-
 ### Log Interpretation
 
 - **Heartbeat messages are normal** — the bot sends periodic heartbeats to confirm it's alive
@@ -710,21 +671,21 @@ When a bot crashes, it may leave open positions that lock up margin. Strategy co
 - Close orphans with a limit order before entering fresh
 - Use a flag (`_orphan_closed`) to run cleanup exactly once per lifecycle
 
+### Deployment `limit_exceeded` Error
+
+If `POST /v2/deployment` returns `limit_exceeded`, the deployment limit of 10 has been hit. **Do NOT retry.** Instead:
+
+1. `GET /v2/deployment` (paginate all pages) — list all deployments with name, status, created date
+2. Show the list to the user and ask which to delete
+3. `DELETE /v2/deployment/{id}` for approved ones (closes positions/orders automatically)
+4. Retry `POST /v2/deployment` only after count drops to 9 or fewer
+
+This error is always recoverable — it just requires cleanup first.
+
 ### Backtest `limit_exceeded` Error
 
 If you get a `limit_exceeded` error when creating a backtest, the user has hit the concurrent backtest limit. Delete completed/failed backtests first: `DELETE /v2/backtesting/{id}`
 
-### Scheduled Tasks / Cron
-
-When helping the user set up a cron job or scheduled task that calls the Superior Trade API (e.g., periodic balance checks, automated stop/start), the agent MUST:
-
-1. **Identify which API key to use** — confirm the user's `SUPERIOR_TRADE_API_KEY` and ensure it will be available in the cron environment (env var, secrets manager, etc.)
-2. **Set the API key in the cron configuration** — include the `x-api-key` header in every scheduled API call
-3. **Warn about key expiry** — if the API key has an expiration date, remind the user to rotate it before it expires
-
-Do not assume the cron environment has access to the same credentials as the user's interactive session. Always explicitly configure the API key for the scheduled task.
-
 ### Timezone Reminder
 
 All API timestamps are in **UTC (ISO8601)**. Convert to the user's local timezone when presenting times conversationally. If timezone is unknown, show both UTC and ask.
-
