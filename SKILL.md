@@ -1,6 +1,6 @@
 ---
 name: Superior Trade
-version: 3.0.8
+version: 3.0.9
 updated: 2026-03-24
 description: "Backtest and deploy trading strategies on Superior Trade's managed cloud."
 homepage: https://account.superior.trade
@@ -621,6 +621,7 @@ For DCA strategies: distinguish trades from orders ("X trades, Y buy orders, Z s
 - **"Analyzing candle"** — bot is checking strategy conditions on the latest candle
 - **"Buying"/"Selling"** — trade execution
 - **Rate limit warnings** — reduce API calls, consider stopping if persistent
+- **Websocket disconnection ("Couldn't reuse watch…falling back to REST api")** — normal and expected. The bot automatically reconnects via REST API. Trading is **not** affected. Do not treat this as an error or suggest redeployment.
 
 ### Diagnosing Zero-Trade Deployments
 
