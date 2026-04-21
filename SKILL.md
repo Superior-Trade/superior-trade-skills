@@ -1,7 +1,7 @@
 ---
 name: Superior Trade
-version: 3.0.8
-updated: 2026-03-24
+version: 4.0.0
+updated: 2026-04-21
 description: "Backtest and deploy trading strategies on Superior Trade's managed cloud."
 homepage: https://account.superior.trade
 source: https://github.com/Superior-Trade
@@ -259,7 +259,7 @@ After status = `completed`, download the `result_url` JSON. Present these key me
 
 1. `POST /v2/deployment` with config, code, name
 2. **Ask the user: live or dry-run?**
-   - **Live:** `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid" }` — server assigns wallet automatically
+   - **Live:** `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid", "wallet_address": "0x...", "subaccount_address": "0x..." }` — `wallet_address` and `subaccount_address` are optional; server assigns wallet automatically if omitted
    - **Dry-run:** Skip the credentials step — the deployment runs in simulation mode (no real funds)
 3. Run the pre-deployment checklist
 4. Show the deployment confirmation summary and wait for explicit user confirmation
@@ -373,6 +373,7 @@ Cancels if running and deletes. Response: `{ "message": "Backtest deleted" }`
   "pods": [{ "name": "string", "status": "Running", "restarts": 0 }],
   "credentials_status": "stored | missing",
   "exchange": "hyperliquid",
+  "subaccount_address": "0x... | undefined",
   "deployment_name": "string",
   "namespace": "string",
   "created_at": "ISO8601",
@@ -390,13 +391,14 @@ Response: `{ "id": "string", "status": "string", "replicas": 1, "available_repli
 
 ```json
 // Request
-{ "exchange": "hyperliquid", "wallet_address": "0x... (optional)" }
+{ "exchange": "hyperliquid", "wallet_address": "0x... (optional)", "subaccount_address": "0x... (optional)" }
 
 // Response (200)
 {
   "id": "string", "credentials_status": "stored", "exchange": "hyperliquid",
   "wallet_address": "0x...", "wallet_source": "main_trading_wallet | provided",
-  "agent_wallet_address": "0x... | undefined", "updated_at": "ISO8601"
+  "agent_wallet_address": "0x... | undefined",
+  "subaccount_address": "0x... | undefined", "updated_at": "ISO8601"
 }
 ```
 
@@ -412,7 +414,7 @@ Response: `{ "id": "string", "status": "string", "replicas": 1, "available_repli
 
 #### GET `/v2/deployment/{id}/credentials` — Credential Info
 
-Does NOT return private keys. Response: `{ "id", "credentials_status": "stored | missing", "exchange", "wallet_address", "wallet_source": "main_trading_wallet | provided", "wallet_type": "main_wallet | agent_wallet", "agent_wallet_address" }`. If missing: `{ "credentials_status": "missing" }`.
+Does NOT return private keys. Response: `{ "id", "credentials_status": "stored | missing", "exchange", "wallet_address", "wallet_source": "main_trading_wallet | provided", "wallet_type": "main_wallet | agent_wallet", "agent_wallet_address", "subaccount_address" }`. If missing: `{ "credentials_status": "missing" }`.
 
 #### POST `/v2/deployment/{id}/exit` — Exit All Positions
 
