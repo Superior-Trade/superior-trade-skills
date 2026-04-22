@@ -21,6 +21,8 @@ externalEndpoints:
     purpose: "All backtesting and deployment operations"
   - url: https://api.hyperliquid.xyz/info
     purpose: "Read-only public queries. Balance checks send the user's public wallet address (not a secret — visible on-chain). Pair validation sends no user data. No authentication or secrets are sent to this endpoint."
+  - url: https://streaming.bitquery.io
+    purpose: "Aerodrome OHLCV and ticker data via Bitquery GraphQL API. Used by the CCXT fork for Aerodrome market data. No user data is sent."
 ---
 
 # Superior Trade API
@@ -246,6 +248,7 @@ Credentials are managed automatically. To use a specific wallet, pass `wallet_ad
 | Exchange    | Stake Currencies                       | Trading Modes |
 | ----------- | -------------------------------------- | ------------- |
 | Hyperliquid | USDC (also USDT0, USDH, USDE via HIP3) | spot, futures |
+| Aerodrome   | USDC                                   | spot          |
 
 ### Hyperliquid Notes
 
@@ -261,6 +264,54 @@ Credentials are managed automatically. To use a specific wallet, pass `wallet_ad
 **Data availability:** Hyperliquid API provides ~5000 historic candles per pair. Superior Trade pre-downloads data; availability starts from ~November 2025.
 
 **Hyperliquid is a DEX** — uses wallet-based signing, not API key/secret. Wallet credentials are managed automatically by the platform.
+
+### Aerodrome Notes (Base DEX)
+
+Aerodrome is an AMM DEX on Base (Ethereum L2). It is **spot-only** — no futures, margin, leverage, or shorting.
+
+**Supported tokens:** AERO, USDC, cbETH, CHECK
+
+**Pair format:** `AERO/USDC`, `cbETH/USDC`, `CHECK/USDC` — no `:USDC` settle suffix (spot only).
+
+**Order type:** Market orders only (AMM swaps are instant). No limit orders.
+
+**Fees:** 0.3% for volatile pools, 0.01% for stable pools. Set `fee` in config to match.
+
+**Slippage:** Default 1%, configurable via `exchange.ccxt_config.options.createOrder.slippage`. AMM trades have price impact — strategies should use conservative stoploss values.
+
+**Gas:** Base L2 gas is cheap (~$0.01-0.05 per swap). The user's Base wallet needs a small ETH balance for gas.
+
+**Data:** OHLCV data fetched live from Bitquery GraphQL API. Aerodrome has been live since August 2023 on Base. Timeframes: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w.
+
+**Wallet:** Uses the user's Privy wallet on Base (provisioned at signup). Credentials are platform-managed — same model as Hyperliquid.
+
+**Config template:**
+```json
+{
+  "exchange": { "name": "aerodrome", "pair_whitelist": ["AERO/USDC"] },
+  "stake_currency": "USDC",
+  "trading_mode": "spot",
+  "timeframe": "15m",
+  "max_open_trades": 3,
+  "stake_amount": 100,
+  "stoploss": -0.05,
+  "minimal_roi": { "0": 0.02 },
+  "entry_pricing": { "price_side": "same" },
+  "exit_pricing": { "price_side": "same" },
+  "pairlists": [{ "method": "StaticPairList" }]
+}
+```
+
+**Strategy differences from Hyperliquid:**
+- No `can_short = True` (spot only, no shorting)
+- No `trading_mode: "futures"` or `margin_mode`
+- No HIP-3 dexes
+- Entry/exit signals are buy/sell only
+
+**Deployment differences:**
+- No sub-account flow (Aerodrome has no sub-accounts)
+- Stop flow: no positions to close (AMM swaps are atomic) — just stops the bot
+- On-chain tx hashes for trade verification (basescan.org)
 
 ### HIP3 — Tokenized Real-World Assets
 
