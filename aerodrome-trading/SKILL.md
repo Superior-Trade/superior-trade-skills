@@ -31,7 +31,7 @@ When behavior is unclear, inspect these local sources before answering:
 ## Non-Negotiables
 
 - Use `exchange.name: "aerodrome"`.
-- Use spot pair format only: `AERO/USDC`, `CHECK/USDC`, etc. Never use `:USDC`.
+- Use only the supported spot pairs: `AERO/USDC` and `CHECK/USDC`. Never use `:USDC`.
 - Omit `trading_mode`, or set it to `"spot"` only.
 - Never set `margin_mode`, `leverage`, short entries, or futures fields.
 - Set `entry_pricing.use_order_book: false` and `exit_pricing.use_order_book: false`.
@@ -57,9 +57,20 @@ Before live deployment or when troubleshooting zero trades:
 
 Important distinction: Aerodrome uses Base wallet balances directly for on-chain swaps. Do not apply external exchange account rules here.
 
+## Supported Markets
+
+Hard-code these Aerodrome/Base market definitions when configuring `exchange.ccxt_config.options.markets`:
+
+| Symbol | Base address | Base decimals | Quote address | Quote decimals | Pool address | Stable |
+| --- | --- | ---: | --- | ---: | --- | --- |
+| `AERO/USDC` | `0x940181a94A35A4569E4529A3CDfB74e38FD98631` | 18 | `0x833589fcd6edb6e08f4c7c32d4f71b54bda02913` | 6 | `0x6cdcb1c4a4d1c3c6d054b27ac5b77e89eafb971d` | false |
+| `CHECK/USDC` | `0x9126236476eFBA9Ad8aB77855c60eB5BF37586Eb` | 18 | `0x833589fcd6edb6e08f4c7c32d4f71b54bda02913` | 6 | `0x6a4BeFa1337865071E27c62dc9d7E3bCa253cE0f` | false |
+
+Backtesting data is available for both supported pairs on `5m`, `15m`, `1h`, `4h`, and `1d`.
+
 ## Minimum Config
 
-Start from this shape and only change pair, market addresses, timeframe, stake, and strategy parameters. Keep the no-orderbook fields.
+Start from this shape and only change `pair_whitelist`, timeframe, stake, and strategy parameters. Keep the hard-coded supported markets and no-orderbook fields.
 
 ```json
 {
@@ -77,6 +88,15 @@ Start from this shape and only change pair, market addresses, timeframe, stake, 
             "quoteAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
             "quoteDecimals": 6,
             "poolAddress": "0x6cdcb1c4a4d1c3c6d054b27ac5b77e89eafb971d",
+            "stable": false
+          },
+          {
+            "symbol": "CHECK/USDC",
+            "baseAddress": "0x9126236476eFBA9Ad8aB77855c60eB5BF37586Eb",
+            "baseDecimals": 18,
+            "quoteAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "quoteDecimals": 6,
+            "poolAddress": "0x6a4BeFa1337865071E27c62dc9d7E3bCa253cE0f",
             "stable": false
           }
         ]
