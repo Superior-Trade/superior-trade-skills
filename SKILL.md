@@ -1,7 +1,7 @@
 ---
 name: Superior Trade
-version: 4.0.0
-updated: 2026-04-21
+version: 4.1.0
+updated: 2026-04-28
 description: "Backtest and deploy trading strategies on Superior Trade's managed cloud."
 homepage: https://account.superior.trade
 source: https://github.com/Superior-Trade
@@ -318,7 +318,9 @@ Check Hyperliquid balances with BOTH endpoints:
 If the agent fails the same task 3+ times (e.g. strategy code keeps crashing, backtest keeps failing), stop and:
 
 1. Summarize what was tried and what failed
-2. Suggest the user try a simpler approach or different parameters
+2. Pivot in two stages before giving up:
+   - **First — param space.** If you have not yet run a parameter sweep on this strategy/pair, run one (see Backtest Workflow → Parameter Sweeps). Most "this idea doesn't work" verdicts are really "this single config didn't work" — sweeping the key parameter often surfaces a viable variant in one batch.
+   - **Second — pair space.** Only after a full sweep also fails, suggest a different pair, timeframe, or strategy family (e.g. mean-reversion instead of momentum).
 3. If the issue appears to be model capability (complex multi-indicator strategy), suggest switching to a more capable model for strategy generation
 
 ## Workflows
@@ -334,6 +336,37 @@ If the agent fails the same task 3+ times (e.g. strategy code keeps crashing, ba
 7. If failed, check `GET /v2/backtesting/{id}/logs`
 8. To cancel: `DELETE /v2/backtesting/{id}`
 
+#### Parameter Sweeps (recommended for first-pass backtests)
+
+For the **first** backtest of any new idea on a given pair, do not submit a single config. Submit a **3-variant sweep** that varies ONE parameter, run all 3 in parallel, then compare horizontally.
+
+**Why:** building a config is the expensive cognitive step; a backtest pod is cheap. A single result tells you whether one point worked; three neighboring points tell you whether the *region* works and which direction to iterate.
+
+**How to fan out:**
+
+1. Issue all 3 `POST /v2/backtesting` calls in parallel (different config for each variant; same code unless the variant is a code-level change).
+2. Issue all 3 `PUT /v2/backtesting/{id}/status` start calls in parallel.
+3. Poll all 3 `GET /v2/backtesting/{id}/status` endpoints in parallel each cycle.
+4. Fetch all 3 `GET /v2/backtesting/{id}` results in parallel once status is `completed`.
+
+Each backtest runs in its own isolated pod, so parallel execution does not slow any single run.
+
+**What to vary (pick ONE axis per sweep):**
+
+| Strategy family | Parameter to vary | Three variants |
+|---|---|---|
+| Momentum / EMA cross | EMA periods | 5/10/20, 8/13/21, 12/26/50 |
+| Trend-following | ATR stop multiplier | 2.0, 3.0, 4.0 |
+| Mean-reversion (RSI) | Oversold threshold | <25, <30, <35 |
+| Bollinger Bands | Std-dev width | 1.5, 2.0, 2.5 |
+| Breakout | Lookback window | 20, 50, 100 candles |
+
+**When NOT to sweep:**
+
+- The user pinned specific parameter values ("backtest with EMA 8/21 only").
+- Walk-forward validation on a second pair after a confirmed setup — that should be a single config (sweeping there is parameter overfitting).
+- The user is iterating on a known winner ("now try the same config on ETH").
+
 #### Result Interpretation
 
 After status = `completed`, download the `result_url` JSON. Present these key metrics:
@@ -346,6 +379,17 @@ After status = `completed`, download the `result_url` JSON. Present these key me
 - **Average trade duration** — how long positions are held
 
 **Before suggesting deployment**, always run a backtest first. If the backtest produced **zero trades** over a timerange that should have generated signals (e.g. weeks on a 5m timeframe), do not offer deployment — the strategy or pair likely has an issue. If PnL is **negative**, note the timerange may be unsuitable but don't dismiss the strategy outright. If PnL is **positive**, present results without overpromising — strong backtest fit can indicate overfitting. Stay neutral and let the user decide.
+
+#### Sweep Result Comparison
+
+For 3-variant sweeps, present results as a single table (Variant | Config | PnL% | Trades | Sharpe | Max DD), then read the shape:
+
+- **All 3 profitable** → pick the **best Sharpe** (not best PnL — small-sample PnL rewards luck). The parameter region is robust; proceed to walk-forward or deployment.
+- **1–2 profitable** → pick the winner, but flag that the parameter is sensitive. Suggest either (a) walk-forward on a second pair as an independent check, or (b) one tighter sweep around the winner.
+- **All 3 unprofitable / < 10 trades** → the idea doesn't work on this pair. Move to pair-space (different pair, timeframe, or strategy family). Do not sweep again on the same pair.
+- **Monotonic edge** (e.g. PnL strictly improves 2.0 → 3.0 → 4.0) → the best variant sits at the edge of the grid. Run ONE more variant past it (e.g. 5.0) — don't run another full 3-grid; just extend by one.
+
+**Zero-trade rule for sweeps:** zeros in 1–2 variants of a sweep are *informative* (the parameter was too tight), not a failure. Only treat the sweep as failed when ALL 3 variants return zero trades.
 
 ### Deployment Workflow
 
