@@ -1,7 +1,7 @@
 ---
 name: Superior Trade
-version: 4.2.0
-updated: 2026-04-28
+version: 4.3.0
+updated: 2026-05-07
 description: "Backtest and deploy trading strategies on Superior Trade's managed cloud."
 homepage: https://account.superior.trade
 source: https://github.com/Superior-Trade
@@ -331,7 +331,7 @@ If the agent fails the same task 3+ times (e.g. strategy code keeps crashing, ba
 2. `POST /v2/backtesting` — create with config, code, and timerange (`{ "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" }`). If the dates are invalid or omitted, the server picks a suitable duration based on the timeframe.
 3. `PUT /v2/backtesting/{id}/status` with `{"action": "start"}`
 4. Poll `GET /v2/backtesting/{id}/status` every 10s until `completed` or `failed` (1–10 min)
-5. `GET /v2/backtesting/{id}` — fetch full results; download `result_url` for detailed JSON
+5. `GET /v2/backtesting/{id}` — fetch full results; download `resultUrl` for detailed JSON
 6. Present summary: total trades, win rate, profit, drawdown, Sharpe ratio
 7. If failed, check `GET /v2/backtesting/{id}/logs`
 8. To cancel: `DELETE /v2/backtesting/{id}`
@@ -369,7 +369,7 @@ Each backtest runs in its own isolated pod, so parallel execution does not slow 
 
 #### Result Interpretation
 
-After status = `completed`, download the `result_url` JSON. Present these key metrics:
+After status = `completed`, download the `resultUrl` JSON. Present these key metrics:
 
 - **Total trades** — completed round-trips
 - **Win rate** — percentage of profitable trades
@@ -448,7 +448,7 @@ Do NOT skip any step or assume it passed without the API call.
 
 #### GET `/v2/backtesting/{id}/status` — Poll Status
 
-Response: `{ "id": "string", "status": "pending | running | completed | failed", "results": null }`. `results` is `null` while running — use `result_url` from full details for complete results.
+Response: `{ "id": "string", "status": "pending | running | completed | failed", "results": null }`. `results` is `null` while running — use `resultUrl` from full details for complete results.
 
 #### GET `/v2/backtesting/{id}` — Full Details
 
@@ -459,7 +459,7 @@ Response: `{ "id": "string", "status": "pending | running | completed | failed",
   "code": "string",
   "status": "pending | running | completed | failed",
   "results": null,
-  "result_url": "https://storage.googleapis.com/... (signed URL, valid 7 days)",
+  "resultUrl": "https://storage.googleapis.com/... (signed URL, valid 7 days)",
   "started_at": "ISO8601",
   "completed_at": "ISO8601",
   "job_name": "string",
@@ -744,23 +744,112 @@ dataframe["slowd"] = stoch["slowd"]
 
 Single-output functions (RSI, SMA, EMA, ATR, ADX) return a Series and can be assigned directly.
 
-### DCA / Position Scaling
+### Multi-Entry Strategies — DCA, Grid, Scaling-In
 
-The engine enforces one open trade per pair. Use `adjust_trade_position()` for DCA:
+The engine enforces **one open trade per pair**. A second `enter_long = 1` while a position is open is silently rejected. Anything that wants to "buy more of the same thing" — DCA, scaling-in, grid laddering, weekly buys — must use `adjust_trade_position`, not repeated entry signals.
+
+Three flags must be set together. Missing any one makes the strategy silently fail or burn the entire stake on the first entry:
 
 ```python
-def adjust_trade_position(self, trade, current_time, current_rate,
-                          current_profit, min_stake, max_stake,
-                          current_entry_rate, current_exit_rate,
-                          current_entry_profit, current_exit_profit, **kwargs):
-    if should_dca(trade, current_time):
-        return max(500, min_stake)  # add $500, respect exchange minimum
+class MyStrategy(IStrategy):
+    position_adjustment_enable = True    # required for adjust_trade_position to fire
+    max_entry_position_adjustment = 5    # cap on additional entries (-1 = unlimited)
+    max_dca_multiplier = 6.0             # initial size × (1 + planned adds)
+
+    def custom_stake_amount(self, pair, current_time, current_rate, proposed_stake,
+                            min_stake, max_stake, leverage, entry_tag, side, **kwargs):
+        # MANDATORY: divide initial entry so room remains for future adds.
+        return proposed_stake / self.max_dca_multiplier
+```
+
+`adjust_trade_position` is called every candle while a trade is open. Return positive = add stake, negative = partial close, `None` = do nothing.
+
+**Pattern A — Profit-driven DCA (averaging down):**
+
+```python
+def adjust_trade_position(self, trade, current_time, current_rate, current_profit,
+                          min_stake, max_stake, *args, **kwargs):
+    if trade.has_open_orders:
+        return None
+    n_entries = trade.nr_of_successful_entries
+    if n_entries <= self.max_entry_position_adjustment and current_profit <= -0.025 * n_entries:
+        first_stake = trade.select_filled_orders(trade.entry_side)[0].stake_amount_filled
+        return (first_stake, f"dca_buy_{n_entries}")
     return None
 ```
 
-- Called every candle while a trade is open. Positive = DCA buy, negative = partial close, None = no action.
-- **Hyperliquid minimum: $10 per order.** Engine inflates by stoploss reserve (up to 1.5x) — always use `min_stake`.
-- `max_open_trades` limits total concurrent trades across all pairs, not entries per pair.
+**Pattern B — Schedule-driven DCA (weekly / daily fixed-time buys).** Gate on `current_time.weekday()` / `.hour`. **Critical**: include a same-day guard, otherwise the initial entry's Monday and `adjust_trade_position`'s Monday collide and double-buy:
+
+```python
+def adjust_trade_position(self, trade, current_time, current_rate, current_profit,
+                          min_stake, max_stake, *args, **kwargs):
+    if trade.has_open_orders:
+        return None
+    if current_time.weekday() != 0:  # Monday only
+        return None
+    filled = trade.select_filled_orders(trade.entry_side)
+    if filled and filled[-1].order_filled_utc.date() == current_time.date():
+        return None  # same-day guard
+    first_stake = filled[0].stake_amount_filled
+    return (first_stake, "weekly_dca")
+```
+
+**Pattern C — Grid / range fade with laddered buys + partial profits:**
+
+```python
+def adjust_trade_position(self, trade, current_time, current_rate, current_profit,
+                          min_stake, max_stake, *args, **kwargs):
+    if trade.has_open_orders:
+        return None
+    n_entries = trade.nr_of_successful_entries
+    n_exits = trade.nr_of_successful_exits
+    # Ladder buys at every -1% drawdown, up to 5 rungs
+    if n_entries <= 5 and current_profit <= -0.01 * n_entries:
+        first = trade.select_filled_orders(trade.entry_side)[0].stake_amount_filled
+        return (first, f"grid_buy_{n_entries}")
+    # Partial profit-takes at every +1.5% above avg, up to 3
+    if n_exits < 3 and current_profit >= 0.015 * (n_exits + 1):
+        return (-(trade.stake_amount / 4.0), f"grid_tp_{n_exits}")
+    return None
+```
+
+A true 20-rung grid (multiple simultaneous orders at distinct price levels) is NOT supported by Freqtrade. Pattern C is the closest faithful approximation — describe it as "laddered range fade" not "20-level grid."
+
+**Hyperliquid minimum: $10 per order.** Engine inflates by stoploss reserve (up to 1.5x) — always use `min_stake` as a floor.
+
+`max_open_trades` limits total concurrent trades across all pairs, not entries per pair.
+
+### Funding Rate (Futures Only)
+
+For "harvest negative funding" / "long when shorts pay longs" / any funding-aware strategy, the historical funding rate is **automatically downloaded** for backtest. Do not poll Hyperliquid's REST API from inside the strategy. Hyperliquid pays funding hourly:
+
+```python
+def populate_indicators(self, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:
+    funding = self.dp.get_pair_dataframe(
+        pair=metadata["pair"],
+        timeframe="1h",
+        candle_type="funding_rate",
+    )
+    if not funding.empty and "open" in funding.columns:
+        f = funding[["date", "open"]].rename(columns={"open": "funding_rate"})
+        dataframe = dataframe.merge(f, on="date", how="left")
+        dataframe["funding_rate"] = dataframe["funding_rate"].ffill().fillna(0.0)
+        dataframe["funding_apr"] = dataframe["funding_rate"] * 24 * 365
+    else:
+        dataframe["funding_rate"] = 0.0
+        dataframe["funding_apr"] = 0.0
+    return dataframe
+```
+
+Available only for futures pairs (`BTC/USDC:USDC`), not spot.
+
+### Required Config Fields
+
+The schema validator rejects payloads that omit any of these — **even when the strategy class declares its own equivalent**:
+
+- `entry_pricing` and `exit_pricing` — both required. Safe default: `{"price_side": "same"}`.
+- `minimal_roi` — required at the config level. Use `{"0": 100.0}` to effectively disable config-level ROI and let the strategy's own exit logic run.
+- `dry_run_wallet` — must be `≥ stake_amount × 1.01`. Default is 1000; with `stake_amount: 1000` the backtest fails at startup with "Starting balance smaller than stake_amount". For DCA / grid strategies that ladder up to `max_dca_multiplier × initial`, set `dry_run_wallet ≈ stake_amount × 10`.
 
 ### `stake_amount: "unlimited"` Warning
 
@@ -777,7 +866,7 @@ def adjust_trade_position(self, trade, current_time, current_rate,
 
 ### Reporting DCA Trades
 
-For DCA strategies: distinguish trades from orders ("X trades, Y buy orders, Z sell orders"), show per-order detail for at least the first trade, flag minimum order rejections or dust positions. Always download `result_url` for full order-level data. Skip breakdown for non-DCA strategies.
+For DCA strategies: distinguish trades from orders ("X trades, Y buy orders, Z sell orders"), show per-order detail for at least the first trade, flag minimum order rejections or dust positions. Always download `resultUrl` for full order-level data. Skip breakdown for non-DCA strategies.
 
 ### Log Interpretation
 
