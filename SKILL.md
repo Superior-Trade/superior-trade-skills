@@ -333,7 +333,7 @@ Before `PUT /v2/deployment/{id}/status` → `{"action":"start"}`:
 
 1. **Credentials stored** — `GET /v2/deployment/{id}` → `credentials_status: "stored"`. If not, call `POST /v2/deployment/{id}/credentials`.
 2. **Identify wallets** — `GET /v2/deployment/{id}/credentials` → note `wallet_address` (agent wallet) and `agent_wallet_address`.
-3. **Funds available** — Check the **main wallet** (platform-managed trading wallet), NOT the agent wallet. Agent wallet having $0 is normal. Query `clearinghouseState` + `spotClearinghouseState` for single deployments. If the master account has sub-accounts, also query `subAccounts2` and sum total balance across master + all sub-accounts — funds allocated to sub-accounts are not available to the master. **Then verify `stake_amount × max_open_trades` fits within the available balance.** The exchange reserves a small fee buffer (~1%), so set `stake_amount` to no more than ~95% of `balance / max_open_trades` to avoid silent trade rejections.
+3. **Funds available** — Check the **main wallet** (platform-managed trading wallet), NOT the agent wallet. Agent wallet having $0 is normal. Query `clearinghouseState` + `spotClearinghouseState` for single deployments. If the master account has sub-accounts, also query `subAccounts2` and sum total balance across master + all sub-accounts — funds allocated to sub-accounts are not available to the master. **Then verify `stake_amount × slots` fits within the available balance, where `slots = min(max_open_trades, distinct pair_whitelist count)`.** The engine enforces one open trade per pair; `max_open_trades` does not create multiple independent positions on the same asset. The exchange reserves a small fee buffer (~1%), so set `stake_amount` to no more than ~95% of `balance / slots` to avoid silent trade rejections.
 4. **No existing positions/orders** — Check `clearinghouseState` for open positions on the main wallet. If positions or orders exist, show the user details (pair, side, size, PnL) and ask them to close before deploying — leftover positions can block new entries or cause unexpected margin usage.
 
 **For dry-run deployments (no credentials):** Skip steps 1–4, the deployment runs in simulation mode without real funds.
@@ -529,7 +529,7 @@ The config object is a Freqtrade trading bot configuration. Do not include `api_
   "stake_currency": "USDC",
   "stake_amount": 100,
   "timeframe": "5m",
-  "max_open_trades": 3,
+  "max_open_trades": 1,
   "stoploss": -0.1,
   "trading_mode": "futures",
   "margin_mode": "cross",
@@ -552,7 +552,7 @@ Same as futures but omit `trading_mode` and `margin_mode`. Pairs use `BTC/USDC` 
   "stake_currency": "USDC",
   "stake_amount": 100,
   "timeframe": "15m",
-  "max_open_trades": 3,
+  "max_open_trades": 1,
   "stoploss": -0.05,
   "trading_mode": "futures",
   "margin_mode": "isolated",
@@ -656,7 +656,7 @@ def adjust_trade_position(self, trade, current_time, current_rate,
 
 - Called every candle while a trade is open. Positive = DCA buy, negative = partial close, None = no action.
 - **Hyperliquid minimum: $10 per order.** Engine inflates by stoploss reserve (up to 1.5x) — always use `min_stake`.
-- `max_open_trades` limits total concurrent trades across all pairs, not entries per pair.
+- `max_open_trades` limits total concurrent trades across all pairs, not entries per pair. For a one-pair strategy, use `max_open_trades: 1`; higher values only apply when `pair_whitelist` has multiple distinct assets.
 
 ### `stake_amount: "unlimited"` Warning
 
