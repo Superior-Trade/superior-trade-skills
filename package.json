@@ -1,0 +1,11 @@
+{
+  "name": "superior-skills",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "lint": "pnpm run validate",
+    "check-types": "pnpm run validate"
+  }
+}

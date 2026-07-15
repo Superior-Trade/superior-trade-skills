@@ -58,5 +58,8 @@ The email is verified once the API key is used successfully in an authenticated 
 
 ## Related Skills
 
-- Use the `superior-trade-hyperliquid` skill for Hyperliquid, Aerodrome, Binance strategy backtests, deployments, wallets, funding, and live trading workflows.
-- Use the `polymarket` skill for Polymarket market discovery, backtests, deployments, and funding workflows.
+- Use the v2 `skills/v2/exchanges/hyperliquid` skill for Hyperliquid strategy backtests, deployments, wallets, funding, and live trading workflows.
+- Use the v2 `skills/v2/exchanges/aerodrome` skill for Aerodrome/Base spot-AMM strategy workflows.
+- Use the v3 `skills/v3/exchanges/polymarket` skill for Polymarket market discovery, backtests, deployments, and funding workflows.
+- Use the v3 `skills/v3/exchanges/lighter` skill for Lighter account bootstrap, direct CCTP deposits, fast withdrawals, and Nautilus deployments.
+- Use the v3 `skills/v3/primitives/deposit-qr` skill when a user needs a QR code or payment URI to fund a Superior-managed wallet on a specific EVM chain.
