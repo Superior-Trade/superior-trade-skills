@@ -12,7 +12,7 @@
     {
       "name": "superior-skills",
       "source": ".",
-      "description": "Onboard, backtest, and deploy validated trading strategies on Hyperliquid and Polymarket via the Superior Trade API. Skills load from skills/."
+      "description": "Onboard, backtest, fund, withdraw, and deploy v2 Hyperliquid/Aerodrome and v3 Polymarket/Lighter strategies via the Superior Trade API. Skills load from skills/."
     }
   ]
 }
