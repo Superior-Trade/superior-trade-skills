@@ -63,3 +63,4 @@ The email is verified once the API key is used successfully in an authenticated 
 - Use the v3 `skills/v3/exchanges/polymarket` skill for Polymarket market discovery, backtests, deployments, and funding workflows.
 - Use the v3 `skills/v3/exchanges/lighter` skill for Lighter account bootstrap, direct CCTP deposits, fast withdrawals, and Nautilus deployments.
 - Use the v3 `skills/v3/primitives/deposit-qr` skill when a user needs a QR code or payment URI to fund a Superior-managed wallet on a specific EVM chain.
+- Use the `skills/external-deposit` skill when a user needs an external bridge/deposit UI link, Relay quote, MetaMask Mobile QR URL, or Robinhood Chain USDG bridge flow.

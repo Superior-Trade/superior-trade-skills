@@ -9,6 +9,8 @@ Use this skill to create a wallet-scannable QR code for sending a coin or ERC-20
 
 This is for funding the wallet itself. It is not the same as a venue-specific deposit intent. For Lighter, a user may first need USDC in a payer wallet, but the Lighter account still requires `POST /v3/portfolio/lighter/deposit` to get the Lighter CCTP intent address.
 
+For external bridge/provider flows such as Relay, Robinhood Chain USDG, MetaMask Mobile bridge links, or prefilled third-party deposit URLs, use `skills/external-deposit` instead. Do not use this primitive to encode arbitrary bridge calldata, approvals, or contract deposit calls into transaction QRs.
+
 ## Required Inputs
 
 Ask for or verify all four fields:
@@ -28,6 +30,7 @@ Never guess the chain. The same address can exist on many EVM chains, and sendin
 - For ERC-20 tokens, include the token contract address in the summary.
 - For wallet compatibility, provide both the EIP-681 QR and a plain-address fallback QR.
 - Do not claim a deposit arrived. Verify with the relevant chain explorer, wallet balance, or Superior Trade API after the user sends funds.
+- Do not use MetaMask deeplinks or QR codes for arbitrary contract calldata. This skill only covers native-token and ERC-20 `transfer` payment URIs.
 
 ## QR Generator
 
@@ -83,6 +86,7 @@ Scan the QR with a wallet that supports Arbitrum token-transfer URIs. If the wal
 - Omitting the chain. A plain address QR alone does not specify Arbitrum vs Base vs Avalanche.
 - Using Ethereum mainnet USDC when the workflow needs Arbitrum/Base/Avalanche USDC.
 - Assuming every wallet supports ERC-20 EIP-681 transfer URIs. Always provide the plain-address fallback.
+- Using this primitive for Relay or other bridge UIs. Use `skills/external-deposit` for prefilled bridge links and quote-backed external wallet flows.
 
 ## Next Step for Lighter
 
