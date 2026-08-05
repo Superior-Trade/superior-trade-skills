@@ -1,7 +1,7 @@
 ---
 name: lighter
-version: 1.0.0
-updated: 2026-07-14
+version: 1.0.2
+updated: 2026-07-22
 description: "Onboard, fund, place immediate orders, withdraw, proxy signed Lighter transactions, and deploy Lighter Nautilus strategies through Superior Trade."
 homepage: https://account.superior.trade
 source: https://github.com/Superior-Trade
@@ -10,7 +10,7 @@ auth:
   type: api_key
   env: SUPERIOR_TRADE_API_KEY
   header: x-api-key
-  scope: "Read-write the user's own Lighter account readiness, funding operations, immediate market orders, withdrawals, signed transaction proxy submissions, and live Nautilus deployments. Can create direct CCTP deposit intents, place one confirmed Lighter market order with stored credentials, fast-withdraw Lighter USDC to user-confirmed EVM addresses, submit user-approved pre-signed Lighter transactions, and start live Lighter deployments that execute real trades. Cannot export private keys or access other users' data."
+  scope: "Read-write the user's own Lighter account readiness, funding operations, immediate market orders, withdrawals, signed transaction proxy submissions, and live Nautilus deployments. Can create CCTP deposit intents, fund them from a confirmed Superior wallet, place one confirmed Lighter market order with stored credentials, securely return Lighter USDC to the Superior owner wallet, submit user-approved pre-signed Lighter transactions, and start live Lighter deployments that execute real trades. Cannot export private keys, withdraw directly to arbitrary external wallets, or access other users' data."
 env:
   - name: SUPERIOR_TRADE_API_KEY
     description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade. Can onboard Lighter accounts, create deposit intents, place immediate Lighter market orders, submit withdrawals, proxy signed Lighter transactions, and manage Lighter Nautilus deployments for the user's owned Superior trading wallets."
@@ -25,11 +25,15 @@ externalEndpoints:
 
 # Superior Trade Lighter
 
-Use this skill for Lighter account onboarding, direct CCTP funding, immediate market orders, signed transaction proxy submission, fast withdrawals, and v3 Nautilus deployments on Superior Trade.
+Use this skill for Lighter account onboarding, Superior-wallet CCTP funding, immediate market orders, signed transaction proxy submission, secure returns to the Superior wallet, and v3 Nautilus deployments on Superior Trade.
 
 **Base URL:** `https://api.superior.trade`
 **Auth:** `x-api-key: $SUPERIOR_TRADE_API_KEY`
 **Venue config:** `{ "venue": "lighter", "instrument_id": "<SYMBOL>.LIGHTER" }`
+
+## Robinhood Chain Variant
+
+Use the separate `lighter-robinhood` skill and exchange name for Robinhood Chain Lighter. Do not treat `lighter-robinhood` as an alias for this default `lighter` profile; it uses a different API base, chain id, deposit asset, and instrument suffix.
 
 ## Safety Rules
 
@@ -40,7 +44,7 @@ Use this skill for Lighter account onboarding, direct CCTP funding, immediate ma
 - Treat Lighter deposits and withdrawals as real fund-moving actions.
 - Treat signed `sendTx` payloads as real trading actions. The proxy forwards the signed transaction; it does not simulate or validate the trading intent.
 - Do not retry an ambiguous withdrawal automatically. Poll the withdrawal status endpoint and report the persisted state.
-- Use the user's Superior-managed owner wallet as `owner_address`. An external deposit wallet is only the payer; it does not become the Lighter owner.
+- Use the user's Superior-managed owner wallet as both the Lighter owner and deposit payer. External funds must enter that wallet before funding Lighter.
 - Do not claim Lighter readiness or balance without querying the API.
 
 ## Account Model
@@ -49,13 +53,13 @@ Lighter does not reuse the Hyperliquid funding flow.
 
 ```text
 Deposit:
-External wallet -> native USDC transfer to Lighter CCTP intent -> Lighter
+External wallet -> Superior-managed wallet -> Lighter CCTP intent -> Lighter
 
 Ownership and signing:
 Superior-managed Privy wallet -> Lighter L1 owner -> Lighter API key index 4
 
 Withdrawal:
-Lighter -> fast withdrawal -> external EVM wallet
+Lighter -> secure withdrawal -> Superior-managed owner wallet
 ```
 
 The Lighter account index is created only after the first credited deposit. Readiness can move through:
@@ -170,11 +174,11 @@ Notes:
 - If Lighter returns a minimum-size or slippage error, do not retry blindly. Re-check market metadata and ask the user to confirm the adjusted order.
 - The legacy `sendTx` action remains available only for already-signed Lighter payloads.
 
-## Direct CCTP Deposit
+## CCTP Deposit
 
 ### POST `/v3/portfolio/lighter/deposit`
 
-Creates a Lighter intent address for an external wallet to fund directly with native USDC. Funds do not pass through a Superior balance.
+Creates a Lighter intent and moves the exact amount from the authenticated Superior-managed wallet into Lighter. Fund the Superior wallet first when the user's USDC is external.
 
 Supported source chains: `arbitrum`, `base`, `avalanche`.
 Minimum amount: `5` USDC.
@@ -187,7 +191,7 @@ Lighter Deposit Summary:
 * Source chain: [arbitrum | base | avalanche]
 * Asset: native USDC
 * Amount: [amount] USDC
-* Payer wallet: [source_address or user's external wallet]
+* Payer wallet: [Superior-managed owner wallet]
 * Lighter owner: [owner_address]
 * Destination: Lighter CCTP intent address returned by the API
 
@@ -203,13 +207,13 @@ curl -sS -X POST "https://api.superior.trade/v3/portfolio/lighter/deposit" \
   -H "Idempotency-Key: ${IDEMPOTENCY_KEY}" \
   -d '{
     "owner_address": "0xSuperiorManagedWallet",
-    "source_address": "0xOptionalExternalPayer",
     "source_chain": "arbitrum",
-    "amount": "5"
+    "amount": "5",
+    "confirmed": true
   }'
 ```
 
-The response includes the chain, native USDC contract, transfer destination, beneficiary owner, and operation id. The user or browser wallet signs the USDC transfer; the API never exports the Superior-managed key for deposits.
+The response includes the chain, native USDC contract, transfer destination, beneficiary owner, and operation id. The API signs server-side and never returns the key.
 
 ### GET `/v3/portfolio/lighter/deposit/{depositId}`
 
@@ -222,13 +226,13 @@ curl -sS "https://api.superior.trade/v3/portfolio/lighter/deposit/${DEPOSIT_ID}?
 
 Reconciliation is read-only and never submits funds.
 
-## Fast Withdrawal
+## Secure Withdrawal To Superior Wallet
 
 ### POST `/v3/portfolio/lighter/withdraw`
 
-Withdraws Lighter USDC to an external EVM wallet. The API signs with the Superior-managed owner and its encrypted Lighter API key.
+Returns Lighter USDC to the Superior-managed L1 owner wallet. This is the canonical treasury route; direct external withdrawal is intentionally not exposed here.
 
-Minimum amount: `4` USDC.
+Minimum amount: `1` USDC.
 Required header: `Idempotency-Key` with a stable unique value for this withdrawal attempt.
 
 Before calling this endpoint, show the user:
@@ -238,7 +242,7 @@ Lighter Withdrawal Summary:
 * Asset: USDC
 * Amount: [amount] USDC
 * Lighter owner: [owner_address]
-* Destination: [to_address]
+* Destination: [owner_address] Superior wallet
 
 This will move REAL USDC out of Lighter. Ambiguous submissions are recorded as unknown and must be reconciled by polling status. Proceed? (yes/no)
 ```
@@ -252,8 +256,8 @@ curl -sS -X POST "https://api.superior.trade/v3/portfolio/lighter/withdraw" \
   -H "Idempotency-Key: ${IDEMPOTENCY_KEY}" \
   -d '{
     "owner_address": "0xSuperiorManagedWallet",
-    "to_address": "0xExternalDestination",
-    "amount": "4"
+    "amount": "3",
+    "confirmed": true
   }'
 ```
 
@@ -266,7 +270,7 @@ curl -sS "https://api.superior.trade/v3/portfolio/lighter/withdraw/${WITHDRAWAL_
   -H "x-api-key: ${SUPERIOR_TRADE_API_KEY}"
 ```
 
-Use this to reconcile withdrawal state. Reconciliation never resubmits a withdrawal.
+Use this to reconcile withdrawal state. Reconciliation never resubmits the Lighter withdrawal. When Lighter marks the secure withdrawal claimable, polling may submit one deterministic Privy-sponsored claim and completes only after provider evidence plus the exact Superior-wallet balance delta.
 
 ## Signed Transaction Proxy
 

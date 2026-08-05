@@ -68,7 +68,7 @@ The `skills/v2/primitives/intelligence/` folder provides the platform's pair-ran
 v3 contains Nautilus-based venue integrations.
 
 - [`polymarket`](skills/v3/exchanges/polymarket/SKILL.md) — Polymarket market discovery, funding, backtests, deployments, and one-off order workflows.
-- [`lighter`](skills/v3/exchanges/lighter/SKILL.md) — Lighter account bootstrap, direct CCTP deposit intents, fast withdrawals, balance checks, and Nautilus deployments. Use this for `venue: "lighter"` configs and `<symbol>.LIGHTER` instruments such as `BTC-PERP.LIGHTER`.
+- [`lighter`](skills/v3/exchanges/lighter/SKILL.md) — Lighter account bootstrap, Superior-wallet CCTP deposit intents, secure returns to the Superior wallet, balance checks, and Nautilus deployments. Use this for `venue: "lighter"` configs and `<symbol>.LIGHTER` instruments such as `BTC-PERP.LIGHTER`.
 - [`lighter-robinhood`](skills/v3/exchanges/lighter-robinhood/SKILL.md) — Robinhood Chain Lighter planning and signed proxy operations. Use this for `venue: "lighter-robinhood"` configs and `.LIGHTER-RH` instruments; perps funding is USDG and live Nautilus starts are blocked until chain id 4663 signing is supported.
 
 ### v3 primitives
@@ -104,9 +104,9 @@ v3 contains Nautilus-based venue integrations.
 | Regime gate                               | `skills/v2/primitives/regime-overlay/SKILL.md`                                                                                | trend filter, directional confirmation                         |
 | Sub-account orchestration                 | `skills/v2/exchanges/hyperliquid/SKILL.md` → `/v2/portfolio/...`                                                              | multi-strategy isolation                                       |
 | Hyperliquid deposit                       | `skills/v2/exchanges/hyperliquid/SKILL.md` → `/v2/portfolio/hyperliquid/deposit`                                              | Arbitrum USDC deposit, fund trading                            |
-| Hyperliquid withdrawal                    | `skills/v2/exchanges/hyperliquid/SKILL.md` → `/v3/portfolio/hyperliquid/withdraw`                                             | Arbitrum USDC withdrawal, 1 USDC fee deducted, delayed arrival |
-| Lighter direct CCTP deposit               | `skills/v3/exchanges/lighter/SKILL.md` → `/v3/portfolio/lighter/deposit`                                                      | external wallet, native USDC, Arbitrum/Base/Avalanche          |
-| Lighter fast withdrawal                   | `skills/v3/exchanges/lighter/SKILL.md` → `/v3/portfolio/lighter/withdraw`                                                     | external EVM wallet, idempotent withdrawal                     |
+| Hyperliquid withdrawal                    | `skills/v2/exchanges/hyperliquid/SKILL.md` → `/v3/portfolio/hyperliquid/withdraw`                                             | Hyperliquid → Superior wallet, 1 USDC fee, delayed arrival      |
+| Lighter CCTP deposit                      | `skills/v3/exchanges/lighter/SKILL.md` → `/v3/portfolio/lighter/deposit`                                                      | Superior wallet, native USDC, Arbitrum/Base/Avalanche           |
+| Lighter secure withdrawal                 | `skills/v3/exchanges/lighter/SKILL.md` → `/v3/portfolio/lighter/withdraw`                                                     | Lighter → Superior wallet, delayed claim, idempotent            |
 | Deposit QR generation                     | `skills/v3/primitives/deposit-qr/SKILL.md`                                                                                    | QR code, payment URI, fund wallet, chain-specific deposit      |
 | External bridge deposit                   | `skills/external-deposit/SKILL.md`                                                                                            | Relay bridge, MetaMask, OKX, Trust Wallet, prefilled deposit URL |
 | Atomic exit-all                           | `skills/v2/exchanges/hyperliquid/SKILL.md` → `/v2/portfolio/hyperliquid/exit`                                                 | kill-switch, emergency exit                                    |

@@ -9,6 +9,7 @@ const requiredFiles = [
   "LICENSE",
   ".claude-plugin/plugin.json",
   ".claude-plugin/marketplace.json",
+  ".turbo-upstream.json",
 ];
 
 async function assertFile(relativePath) {
@@ -29,6 +30,7 @@ for (const requiredFile of requiredFiles) {
 for (const jsonFile of [
   ".claude-plugin/plugin.json",
   ".claude-plugin/marketplace.json",
+  ".turbo-upstream.json",
 ]) {
   const fullPath = await assertFile(jsonFile);
   JSON.parse(await readFile(fullPath, "utf8"));

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate.mjs",
+    "sync:upstream": "node scripts/sync-upstream.mjs",
     "lint": "pnpm run validate",
     "check-types": "pnpm run validate"
   }
