@@ -187,7 +187,7 @@ Backtests are simulations. Do **not** size a backtest from the user's live walle
 
 For the **first** backtest of any new idea on a given pair, do not submit a single config. Submit a **3-variant sweep** that varies ONE parameter, run all 3 in parallel, then compare horizontally.
 
-**Why:** building a config is the expensive cognitive step; a backtest pod is cheap. A single result tells you whether one point worked; three neighboring points tell you whether the *region* works and which direction to iterate.
+**Why:** building a config is the expensive cognitive step; running a backtest is cheap. A single result tells you whether one point worked; three neighboring points tell you whether the *region* works and which direction to iterate.
 
 **How to fan out:**
 
@@ -196,7 +196,7 @@ For the **first** backtest of any new idea on a given pair, do not submit a sing
 3. Poll all 3 `GET /v2/backtesting/{id}/status` endpoints in parallel each cycle.
 4. Fetch all 3 `GET /v2/backtesting/{id}` results in parallel once status is `completed`.
 
-Each backtest runs in its own isolated pod, so parallel execution does not slow any single run.
+Each backtest runs in isolation, so parallel execution does not slow any single run.
 
 **What to vary (pick ONE axis per sweep):**
 

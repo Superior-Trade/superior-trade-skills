@@ -323,7 +323,7 @@ For "exit everything", first show the verified positions/orders summary, then as
 
 #### POST `/v3/markets/search` — Search Polymarket Markets
 
-Use this before any Polymarket backtest when the user describes a market in natural language ("BTC 120k before July", "Trump Greenland before 2027", "Fed 50 bps cut") or provides a Polymarket event URL such as `https://polymarket.com/event/world-cup-winner`. The endpoint returns candidates, not a single guaranteed resolution.
+Use this before any Polymarket backtest when the user describes a market in natural language ("BTC 120k before July", "Fed 50 bps cut", "World Cup winner") or provides a Polymarket event URL such as `https://polymarket.com/event/world-cup-winner`. The endpoint returns candidates, not a single guaranteed resolution.
 
 ```json
 // Request
@@ -410,9 +410,9 @@ Keep generated strategy code self-contained and NautilusTrader-compatible. Avoid
     "order_size": 10,
     "lookback_ticks": 20
   },
-  "marketSlugs": ["will-donald-trump-win-the-2024-us-presidential-election"],
+  "marketSlugs": ["will-bitcoin-reach-150k-in-2026"],
   "startingBalance": 1000,
-  "timerange": { "start": "2024-10-01", "end": "2024-11-06" },
+  "timerange": { "start": "2026-06-01", "end": "2026-07-01" },
   "venueProfile": "polymarket-london"
 }
 
@@ -487,7 +487,7 @@ Returns `202` while the result is not ready, then `200` when the runner has uplo
         "side": "BUY",
         "quantity": 19.23,
         "price": 0.52,
-        "timestamp": "2024-10-15T14:22:00Z"
+        "timestamp": "2026-06-15T14:22:00Z"
       }
     ],
     "positions": [

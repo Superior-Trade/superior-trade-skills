@@ -30,7 +30,7 @@ metadata:
 
 Trade prediction markets on Polymarket through Superior Trade. Discover markets, place single immediate market orders, write NautilusTrader strategies, backtest against historical trade data, and deploy live — all through one API.
 
-**Base URL:** Use the environment-configured Superior Trade API base URL. Production is `https://api.superior.trade/v3`; UAT may use `https://api-uat.superior.trade/v3`.
+**Base URL:** `https://api.superior.trade/v3`. If the environment configures a different base URL, use that instead.
 **Auth:** Prefer `x-api-key: <api_key>` for Superior Trade product API keys. Browser/session callers may use `Authorization: Bearer <token>`.
 **Docs:** `GET /v3/docs` (interactive reference), `GET /v3/openapi.json` (OpenAPI spec)
 
