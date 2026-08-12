@@ -91,17 +91,11 @@ curl -sS "https://api.superior.trade/v3/account/${ADDRESS}/status/hyperliquid" \
 
 Proceed only when `onboarding.ready` is `true` and `onboarding.blockers` is empty.
 
-#### GET `/v2/account/status` — Legacy Account Setup Status
+#### GET `/v2/account/status` — REMOVED
 
-Legacy status endpoint for the authenticated user before live trading. Prefer the v3 trading-account flow above when selecting or bootstrapping a specific trading wallet.
+This endpoint no longer exists; it answers `404 {"error":"not_found","message":"Route not found"}`. Do not call it, and do not treat its failure as an account problem.
 
-```bash
-curl -sS "https://api.superior.trade/v2/account/status" \
-  -H "accept: application/json" \
-  -H "x-api-key: ${SUPERIOR_TRADE_API_KEY}"
-```
-
-If this endpoint returns a `400`, do not proceed with live credentials or deployment start. For trading-account workflows, use `GET /v3/account`, `POST /v3/account/{address}/hyperliquid`, and `GET /v3/account/{address}/status/hyperliquid` to resolve and verify setup for the selected wallet.
+The per-wallet equivalent is `GET /v2/account/{address}/status/{exchange}`. For trading-account workflows use the v3 flow above: `GET /v3/account`, `POST /v3/account/{address}/hyperliquid`, then `GET /v3/account/{address}/status/hyperliquid`.
 
 ### Backtesting
 

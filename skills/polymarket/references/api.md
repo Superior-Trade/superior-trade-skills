@@ -132,7 +132,7 @@ Use this before deployment start. The v3 route reconciles approvals and CLOB cre
 }
 ```
 
-#### GET `/v3/account/{address}/deposit-link` — Generate Deposit Links
+#### GET `/v3/account/{address}/deposit-link` — REMOVED (404; use the deposit-qr skill instead)
 
 Generates wallet deep links for depositing native USDC to an owned trading-account wallet. Query params: `chain` (`polygon` or `arbitrum`, default `arbitrum`), `amount` (default `10`), and `wallet` (`all`, `metamask`, `trust`, `coinbase`, etc.).
 

@@ -100,7 +100,6 @@ Current account/funding endpoints:
 - `PATCH /v3/account/{address}`
 - `POST /v3/account/{address}/polymarket`
 - `GET /v3/account/{address}/status/polymarket`
-- `GET /v3/account/{address}/deposit-link`
 - `POST /v3/portfolio/polymarket/deposit`
 - `POST /v3/portfolio/polymarket/exit`
 - `POST /v3/authorize-and-send/polymarket`

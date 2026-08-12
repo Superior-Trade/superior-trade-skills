@@ -21,7 +21,8 @@ Live ranked alpha scan over Hyperliquid alts + HIP-3 markets. Returns the same d
 
 ## When to call which endpoint
 
-- **List question** ("what's hot", "any squeeze setups", "show me coiled springs in HIP-3") → `GET /v2/intelligence/scan` with optional `bucket` and `category` filters.
+- **List question** ("what's hot", "any squeeze setups", "show me coiled springs in HIP-3") → `GET /v2/intelligence/scan`.
+  **Pass `category=both` for any open-ended question.** The parameter defaults to `alts`, so a bare call silently returns crypto perps only and never surfaces a single HIP-3 stock, index or commodity — even though this skill advertises them. Narrow to `alts` or `tradfi` only when the user asked for one. Add `bucket` when they named a specific setup.
 - **Single-pair question** ("tell me about ETH", "is NEAR a stealth setup", "should I deploy AVAX") → `GET /v2/intelligence/setup/{pair}`. Always do this BEFORE backtesting / deploying so the choice is grounded in current data.
 
 ## Critical: do not improvise rankings
