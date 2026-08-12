@@ -132,14 +132,21 @@ Response: `{ "id": "string", "status": "pending | running | completed | failed",
   "id": "string",
   "config": {},
   "code": "string",
-  "status": "pending | running | completed | failed",
-  "results": null,
-  "resultUrl": "https://storage.googleapis.com/... (signed URL, valid 7 days)",
-  "started_at": "ISO8601",
-  "completed_at": "ISO8601",
-  "job_name": "string",
-  "created_at": "ISO8601",
-  "updated_at": "ISO8601"
+  "name": "string",
+  "replicas": 1,
+  "status": "pending | running | stopped",
+  "pods": [{ "name": "string", "status": "Running", "restarts": 0 }],
+  "credentialsStatus": "stored | missing",
+  "exchange": "hyperliquid",
+  "executionMode": "string",
+  "executionEngine": "string",
+  "apiVersion": "string",
+  "walletAddress": "0x... | null",
+  "isDeleted": false,
+  "createdAt": "ISO8601",
+  "createdBy": "string",
+  "updatedAt": "ISO8601",
+  "updatedBy": "string"
 }
 ```
 
@@ -172,6 +179,8 @@ Cancels if running and deletes. Response: `{ "message": "Backtest deleted" }`
 **On stop:** The platform automatically cancels all open orders and closes all positions on Hyperliquid before stopping the pod.
 
 #### GET `/v2/deployment/{id}` — Full Details
+
+> **Casing:** this endpoint returns the stored record verbatim, so its fields are **camelCase** (`credentialsStatus`, `createdAt`, `walletAddress`). The credentials endpoints below hand-map their responses and return **snake_case** (`credentials_status`, `wallet_address`). Reading the wrong one yields `undefined`, which looks exactly like "not configured". Verified against production 2026-08-12.
 
 ```json
 {
