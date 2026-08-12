@@ -51,6 +51,16 @@
         "Says to omit wallet_address so the server assigns the next idle trading account",
         "Mentions the account-count ceiling (Free 3, Pro 6) or sub-accounts as overflow"
       ]
+    },
+    {
+      "id": "completed-backtest-has-no-resultUrl",
+      "prompt": "My backtest says status completed but resultUrl is null and results is null. Did it fail?",
+      "should_trigger": true,
+      "assertions": [
+        "States that null results/resultUrl on a completed run is normal, not a failure",
+        "Directs the agent to GET /v2/backtesting/{id}/logs for the Freqtrade summary",
+        "Does not tell the user to re-run the backtest or wait longer"
+      ]
     }
   ]
 }

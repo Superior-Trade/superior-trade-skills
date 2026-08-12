@@ -167,7 +167,7 @@ If the agent fails the same task 3+ times (e.g. strategy code keeps crashing, ba
 2. `POST /v2/backtesting` — create with config, code, and timerange (`{ "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" }`). If the dates are invalid or omitted, the server picks a suitable duration based on the timeframe.
 3. `PUT /v2/backtesting/{id}/status` with `{"action": "start"}`
 4. Poll `GET /v2/backtesting/{id}/status` every 10s until `completed` or `failed` (1–10 min)
-5. `GET /v2/backtesting/{id}` — fetch full results; download `resultUrl` for detailed JSON
+5. `GET /v2/backtesting/{id}/logs` — the metrics live here. `results` and `resultUrl` on the record are null even for a completed run (checked across a month of completed backtests), so parse the Freqtrade summary tables out of the logs
 6. Present summary: total trades, win rate, profit, drawdown, Sharpe ratio
 7. If failed, check `GET /v2/backtesting/{id}/logs`
 8. To cancel: `DELETE /v2/backtesting/{id}`
@@ -216,7 +216,7 @@ Each backtest runs in isolation, so parallel execution does not slow any single 
 
 #### Result Interpretation
 
-After status = `completed`, download the `resultUrl` JSON. Present these key metrics:
+After status = `completed`, read `GET /v2/backtesting/{id}/logs`. Freqtrade prints its full summary there — trade counts, win rate, profit, drawdown and duration tables. Do **not** wait on `resultUrl`: it is null on completed runs, so an agent that blocks on it will report a successful backtest as broken. Present these key metrics:
 
 - **Total trades** — completed round-trips
 - **Win rate** — percentage of profitable trades

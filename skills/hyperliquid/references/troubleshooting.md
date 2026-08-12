@@ -10,7 +10,7 @@ Reference for the `hyperliquid` skill. See SKILL.md for the workflow and safety 
 
 ### Reporting DCA Trades
 
-For DCA strategies: distinguish trades from orders ("X trades, Y buy orders, Z sell orders"), show per-order detail for at least the first trade, flag minimum order rejections or dust positions. Always download `resultUrl` for full order-level data. Skip breakdown for non-DCA strategies.
+For DCA strategies: distinguish trades from orders ("X trades, Y buy orders, Z sell orders"), show per-order detail for at least the first trade, flag minimum order rejections or dust positions. Order-level detail comes from `GET /v2/backtesting/{id}/logs`; `resultUrl` is null on completed runs. Skip breakdown for non-DCA strategies.
 
 ### Log Interpretation
 

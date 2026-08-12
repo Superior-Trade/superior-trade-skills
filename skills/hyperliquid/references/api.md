@@ -123,7 +123,9 @@ The per-wallet equivalent is `GET /v2/account/{address}/status/{exchange}`. For 
 
 #### GET `/v2/backtesting/{id}/status` — Poll Status
 
-Response: `{ "id": "string", "status": "pending | running | completed | failed", "results": null }`. `results` is `null` while running — use `resultUrl` from full details for complete results.
+Response: `{ "id": "string", "status": "pending | running | completed | failed", "results": null }`.
+
+`results` and `resultUrl` are null **even after the run completes** — verified across every completed backtest on a test account spanning a month. The metrics are printed by Freqtrade into `GET /v2/backtesting/{id}/logs`; parse them from there. A completed backtest with no `resultUrl` is a normal success, not a failure.
 
 #### GET `/v2/backtesting/{id}` — Full Details
 
