@@ -1,3 +1,4 @@
 clawhub-*.log
 clawhub-*.sh
 node_modules/
+.e2e-*.log

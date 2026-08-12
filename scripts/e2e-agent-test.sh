@@ -21,7 +21,7 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SCENARIO="${1:-onboarding}"
 WORKDIR="$(mktemp -d)"
-trap 'rm -rf "$WORKDIR"' EXIT
+trap 'cd "$REPO" 2>/dev/null || cd /; rm -rf "$WORKDIR"' EXIT
 
 if [[ -z "${SUPERIOR_TRADE_API_KEY:-}" ]]; then
   echo "SUPERIOR_TRADE_API_KEY is required." >&2
@@ -65,4 +65,4 @@ cd "$WORKDIR"
 SUPERIOR_TRADE_API_KEY="$SUPERIOR_TRADE_API_KEY" \
   claude -p "$TASK
 
-$GUARDRAILS" --allowedTools "Read Glob Grep Bash" 2>&1
+$GUARDRAILS" --allowedTools "Read Glob Grep Bash" < /dev/null 2>&1
