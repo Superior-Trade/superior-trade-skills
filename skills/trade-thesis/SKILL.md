@@ -1,6 +1,6 @@
 ---
 name: trade-thesis
-description: "Use when a user proposes a trade idea, asks whether they should trade something, wants a bull/bear case or pre-trade analysis, or before deploying any new strategy live for the first time. Builds a structured thesis: bull and bear cases, invalidation criteria, and a sizing rationale."
+description: "Use when a user proposes a trade idea, asks \"should I trade X\", wants a bull/bear case, conviction check, trade plan or pre-trade analysis, or before deploying any new strategy live for the first time. Builds a structured thesis: bull and bear cases, invalidation criteria, and a sizing rationale."
 metadata:
   version: 0.1.0
   updated: 2026-06-07

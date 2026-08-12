@@ -33,7 +33,18 @@
         "Refuses to start live in the same turn",
         "Requires a backtest first",
         "Requires an explicit confirmation after showing a deployment summary with real numbers",
-        "Offers dry-run as the alternative for a first-time deployment"
+        "Offers dry-run as the alternative, since BTC here means Hyperliquid, where dry-run exists"
+      ]
+    },
+    {
+      "id": "venue-specific-deploy-shape",
+      "prompt": "I want to deploy a Polymarket strategy. Can I dry-run it first, and what do I pass when storing credentials?",
+      "should_trigger": true,
+      "assertions": [
+        "States that dry-run is Hyperliquid-only and not available on Polymarket",
+        "States that Polymarket requires an owned wallet_address when storing credentials",
+        "Does not repeat the Hyperliquid rule that omitting wallet_address auto-assigns an account",
+        "Offers a backtest as the available rehearsal instead"
       ]
     },
     {

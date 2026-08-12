@@ -1,6 +1,6 @@
 ---
 name: intelligence
-description: "Use when the user asks what's hot, what's moving, whether there's any alpha, to show squeeze setups, what the setup is on a given pair, or whether to deploy one — any market-scan or pair-drilldown question. Surfaces Superior Trade's live multi-bucket scoring across Hyperliquid alts and HIP-3 stocks, indices, commodities and FX."
+description: "Use when the user asks what's hot, what's moving, if there's any alpha, \"show me squeeze setups\", \"what's the setup on ETH\", \"is SOL coiled\", \"should I deploy NEAR\", or any market-scan or pair-drilldown question. Surfaces live scoring for squeeze fuel, stealth accumulation, coiled spring and basis flipping across Hyperliquid alts and HIP-3, choosing the strongest timeframe per pair."
 metadata:
   version: 0.1.0
   updated: 2026-05-09

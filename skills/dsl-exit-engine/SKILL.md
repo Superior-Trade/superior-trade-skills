@@ -1,6 +1,6 @@
 ---
 name: dsl-exit-engine
-description: "Use when designing or tuning exit logic for a Freqtrade strategy — ratcheting trailing stop, two-phase exit, ALO-aware exit, dynamic stoploss DSL, ROI ladder, take-profit ladder, exit engine. Defines a three-phase exit (ROI ladder, hard stop, ratcheting trail) that other strategies compose."
+description: "Use when designing or tuning exit logic for a Freqtrade strategy — ratcheting trailing stop, two-phase exit, ALO-aware exit, dynamic stoploss DSL, ROI ladder, take-profit ladder, exit engine. Defines a three-phase exit that strategies compose: Phase 0 ROI ladder, Phase 1 hard stop, Phase 2 ratcheting trail."
 metadata:
   version: 0.1.0
   updated: 2026-05-18

@@ -38,7 +38,7 @@ Load these on demand — each is the full detail behind a summary below.
 
 | Read | When |
 | --- | --- |
-| `references/api.md` | You need the exact request/response shape for any endpoint: account, backtesting, deployment, portfolio deposit, portfolio exit. |
+| `references/api.md` | You need the exact request/response shape for any endpoint: account, backtesting, deployment, portfolio deposit, **getting funds back out** (`POST /v3/portfolio/hyperliquid/withdraw`), or closing everything at once (portfolio exit). |
 | `references/strategy-config.md` | You are writing or fixing config JSON or strategy Python — config fields, code template, TA-Lib usage, multi-entry (DCA/grid), funding-rate access, `minimal_roi` shapes. |
 | `references/wallets-and-accounts.md` | Anything about wallets, balances, deposits, sub-accounts, multi-strategy capacity, pair formats, or HIP-3 tickers. |
 | `references/troubleshooting.md` | A deployment or backtest is failing, trading zero times, hitting rate limits, or showing orphan positions. |
@@ -268,6 +268,14 @@ Before `PUT /v2/deployment/{id}/status` → `{"action":"start"}`:
 
 Do NOT skip any step or assume it passed without the API call.
 
+### Getting Funds Back Out
+
+Two different operations — do not confuse them:
+
+- **Unwind a sub-account** — `POST /v2/portfolio/hyperliquid/exit` closes ALL positions on the given `subaccount_address` and returns its funds to the master. Sub-account scoped; it does not take money off Hyperliquid.
+- **Take USDC off Hyperliquid** — `POST /v3/portfolio/hyperliquid/withdraw` moves USDC to the server-resolved main Superior wallet on Arbitrum. The destination is resolved server-side, so you cannot send to an arbitrary or external address.
+
+Both move real money. State the amount and destination and get an explicit yes first. Stop any strategy trading that account before withdrawing, or the withdrawal can underfund a live position. Hyperliquid also deducts a 1 USDC fee from the withdrawal amount — never withdraw 1 USDC or less. Full shapes and the confirmation template are in `references/api.md`.
 
 ## Related skills
 

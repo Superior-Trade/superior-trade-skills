@@ -66,7 +66,7 @@ The API mails the key to that inbox. Tell the user to store it as `SUPERIOR_TRAD
 Verify it works before going further:
 
 ```bash
-curl -sS https://api.superior.trade/v2/account -H "x-api-key: $SUPERIOR_TRADE_API_KEY"
+curl -sS https://api.superior.trade/v3/account -H "x-api-key: $SUPERIOR_TRADE_API_KEY"
 ```
 
 A `401`/`403` means the key is wrong or truncated — ask the user to re-copy the full key from the latest email. The email is verified by the first successful authenticated call, so this doubles as activation.
@@ -75,9 +75,9 @@ Never paste the key into chat, files, logs, or examples. If a user pastes theirs
 
 ### 2. Trading account
 
-List the user's trading accounts with `GET /v3/account`. Each is a platform-managed wallet — **the user does not need their own exchange wallet or to connect one.** If none exists, create one through the same endpoint, or point the user at https://account.superior.trade.
+List the user's trading accounts with `GET /v3/account`. Each is a platform-managed wallet — **the user does not need their own exchange wallet or to connect one.** If none exists, create one with `POST /v3/account`, or point the user at https://account.superior.trade.
 
-Free accounts hold up to 3 trading accounts, Pro up to 6. One live strategy runs per trading account, so account count is the ceiling on concurrent strategies.
+Free accounts hold up to 3 trading accounts, Pro up to 6, and one live strategy runs per trading account. When every account is busy, Hyperliquid masters with at least $100,000 lifetime volume can add sub-accounts as overflow (max 10 per master) — see the `hyperliquid` skill. Other venues have no overflow path.
 
 Then bootstrap the venue the user picked:
 
@@ -86,6 +86,7 @@ Then bootstrap the venue the user picked:
 | Hyperliquid | `POST /v3/account/{address}/hyperliquid` |
 | Polymarket | `POST /v3/account/{address}/polymarket` |
 | Lighter | see the `lighter` skill |
+| Aerodrome | none — trades directly from the Base wallet balance; see the `aerodrome` skill |
 
 ### 3. Funds
 
@@ -96,6 +97,7 @@ The user funds their own platform-managed wallet with their own capital. Then th
 | Hyperliquid | native USDC on Arbitrum One | `POST /v2/portfolio/hyperliquid/deposit` |
 | Polymarket | USDC/USDC.e on Polygon | `POST /v3/portfolio/polymarket/deposit` (wraps into pUSD) |
 | Lighter | USDC via CCTP | see the `lighter` skill |
+| Aerodrome | USDC **and** ETH for gas, both on Base | nothing — swaps run straight off the Base wallet balance |
 
 If the user needs help getting funds into the platform wallet, use the `deposit-qr` skill for a payment QR or wallet URI, or `external-deposit` for a bridge from an external wallet.
 
@@ -132,8 +134,11 @@ Read the outcome honestly. Zero trades over a window that should have produced s
 Deployment is the point of no return, so it is gated:
 
 1. Create the deployment with config and code.
-2. Ask live or dry-run. Dry-run needs no credentials and touches no real funds — offer it to anyone who has not deployed before.
-3. For live, store credentials. Omit `wallet_address` and the server assigns the next idle trading account.
+2. On Hyperliquid, ask live or dry-run — dry-run needs no credentials and touches no real funds, so offer it to anyone who has not deployed before. **Dry-run is Hyperliquid-only.** Polymarket and Lighter always require credentials, and Aerodrome rejects a config containing the `dry_run` key at all. On those three, a backtest is the only rehearsal available.
+3. For live, store credentials — the shape differs by venue, so follow the venue skill rather than generalising:
+   - **Hyperliquid** — `wallet_address` is optional. Omit it and the server assigns the next idle trading account.
+   - **Polymarket and Lighter** — an owned `wallet_address` is **required**. Omitting it fails the start with `credentials_required`.
+   - Never send key material to a credentials endpoint on any venue.
 4. Run the venue skill's pre-deployment checklist. Every item is an API call, not an assumption.
 5. Show the deployment summary — strategy, venue, pairs, stake, max open trades, stoploss — and state plainly that it will trade real funds.
 6. Wait for an explicit yes. Then start it.
@@ -157,7 +162,7 @@ These hold across every venue and override anything convenient.
 
 Hand off once the user has picked a venue. Each owns its own endpoints, funding model, pre-deployment checklist, and troubleshooting.
 
-- `hyperliquid` — perps and spot, plus HIP-3 stocks, commodities, indices and FX. The main venue.
+- `hyperliquid` — perps and spot, plus HIP-3 tokenized stocks, commodities, and indices. The main venue.
 - `polymarket` — prediction markets, NautilusTrader strategies, filled-data backtests. Uses `SUPERIOR_TRADE_PM_API_KEY`.
 - `lighter` — Lighter onboarding, CCTP funding, withdrawals, Nautilus deployments.
 - `aerodrome` — Base spot AMM swaps; no order book, no leverage.

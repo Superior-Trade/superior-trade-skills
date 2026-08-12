@@ -1,6 +1,6 @@
 ---
 name: bollinger-reverter-4h
-description: "Use when writing a symmetric Bollinger-band mean-reversion strategy on the 4h timeframe — BB reverter, range trader, chop strategy, ADX-gated mean reversion, band-fade with an ROI ladder. Long-or-short on 2-sigma band touches with RSI confirmation, gated to low-ADX ranges. Backtest evidence and the exact ladder are in the body."
+description: "Use when writing a symmetric Bollinger-band mean-reversion strategy on the 4h timeframe — BB reverter, range trader, chop strategy, ADX<25 mean reversion, band-fade with a minimal_roi ladder. Long-or-short on 2-sigma band touches with RSI confirmation. Validated on BTC/ETH/SOL/DOGE; numbers and the exact ROI ladder are in the body."
 metadata:
   version: 0.1.0
   updated: 2026-05-18

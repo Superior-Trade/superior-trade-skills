@@ -120,18 +120,39 @@ for (const [label, contents] of [
   }
 }
 
-// Any skills/<name>/ path named in prose must actually exist, so the entry
-// skill's routing table can't rot into dead ends.
-const linkedSkills = new Set(
-  [...readme.matchAll(/skills\/([a-z0-9-]+)\//g)].map((m) => m[1]),
+// Any skill named in prose must actually exist, so routing can't rot into dead
+// ends. The entry skill is the important one here: its whole job is pointing at
+// other skills, and it names them bare (`hyperliquid`) rather than by path.
+const entrySkill = await readFile(
+  path.join(root, "skills/superior-trade/SKILL.md"),
+  "utf8",
 );
-for (const rootLink of rootSkill.matchAll(/skills\/([a-z0-9-]+)\//g)) {
-  linkedSkills.add(rootLink[1]);
-}
-for (const linked of linkedSkills) {
-  if (!skillPaths.includes(`skills/${linked}`)) {
-    throw new Error(`README/SKILL.md links skills/${linked}, which does not exist`);
+const knownSkills = new Set(skillPaths.map((p) => p.replace("skills/", "")));
+
+for (const [label, contents] of [
+  ["README.md", readme],
+  ["SKILL.md", rootSkill],
+  ["skills/superior-trade/SKILL.md", entrySkill],
+]) {
+  for (const match of contents.matchAll(/skills\/([a-z0-9-]+)\//g)) {
+    if (!knownSkills.has(match[1])) {
+      throw new Error(`${label} links skills/${match[1]}, which does not exist`);
+    }
   }
+}
+
+// The entry skill routes by bare backticked name rather than by path, so a
+// renamed or deleted skill would otherwise survive there as a silent dead end.
+// Every backticked lowercase token in that file is a skill name except the
+// handful of protocol terms below.
+const NON_SKILL_TERMS = new Set(["x-api-key"]);
+for (const match of entrySkill.matchAll(/`([a-z][a-z0-9-]{3,})`/g)) {
+  const routed = match[1];
+  if (NON_SKILL_TERMS.has(routed) || knownSkills.has(routed)) continue;
+  throw new Error(
+    `skills/superior-trade/SKILL.md routes to \`${routed}\`, which is not a skill. ` +
+      `Add it to NON_SKILL_TERMS in this script if it is not meant to be one.`,
+  );
 }
 
 console.log(`Validated ${skillPaths.length} Superior skills.`);

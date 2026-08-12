@@ -1,6 +1,6 @@
 ---
 name: backtesting
-description: Use when running, interpreting, or designing backtests on Superior Trade — anything about backtest windows, trade-count thresholds, exit-reason mix, parameter sweeps, walk-forward validation, zero-trade diagnosis, compute-cost estimation, or "is this backtest result trustworthy?". Pair with the relevant strategy template from `strategies/`.
+description: Use when running, interpreting, or designing backtests on Superior Trade — anything about backtest windows, trade-count thresholds, exit-reason mix, parameter sweeps, walk-forward validation, zero-trade diagnosis, compute-cost estimation, or "is this backtest result trustworthy?". Pair with the relevant strategy skill, such as mean-reversion or breakout.
 metadata:
   version: 0.1.0
   updated: 2026-05-07
@@ -8,7 +8,7 @@ metadata:
 
 # Backtesting Best Practices
 
-The mechanics of submitting a backtest are in the main [SKILL.md](https://github.com/Superior-Trade/superior-skills/blob/main/SKILL.md) under "Backtest Workflow". This page is about the **judgment calls** — picking a window that means something, telling signal from noise in the result, and knowing when to give up vs. iterate.
+The mechanics of submitting a backtest are in the `hyperliquid` skill under "Backtest Workflow" (Polymarket backtests are in the `polymarket` skill). This page is about the **judgment calls** — picking a window that means something, telling signal from noise in the result, and knowing when to give up vs. iterate.
 
 ## The trade-count bar (sample size first)
 

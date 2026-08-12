@@ -1,6 +1,6 @@
 ---
 name: regime-overlay
-description: "Use when adding a regime filter to any directional strategy — regime gate, trend filter, directional confirmation, ADX gate, EMA-separation filter, trade-or-skip overlay. Provides three reusable gates (strong bear, strong bull, range) that wrap entry signals with triple confirmation."
+description: "Use when adding a regime filter to any directional strategy — regime gate, trend filter, directional confirmation, ADX gate, EMA-separation filter, trade-or-skip overlay. Provides three reusable gates (regime_strong_bear, regime_strong_bull, regime_range) that wrap entry signals with triple confirmation."
 metadata:
   version: 0.1.0
   updated: 2026-05-18

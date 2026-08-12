@@ -118,7 +118,7 @@ v3 contains Nautilus-based venue integrations.
 | Atomic exit-all                           | `skills/hyperliquid/SKILL.md` → `/v2/portfolio/hyperliquid/exit`                                                 | kill-switch, emergency exit                                    |
 | HIP3 RWA support                          | `skills/hyperliquid/SKILL.md` → HIP3 section                                                                     | tokenized stocks, commodities, indices                         |
 | Polymarket strategy archetypes            | `skills/probability-momentum/`, `skills/deadline-drift/`, +4                                         | prediction-market archetypes                                   |
-| Managed wallet                            | `skills/hyperliquid/SKILL.md` → Account Setup                                                                    | no-key trading, custodial-style UX                             |
+| Managed wallet                            | `skills/hyperliquid/references/wallets-and-accounts.md` → Wallet Architecture                                                                    | no-key trading, custodial-style UX                             |
 
 ## Folder layout
 
