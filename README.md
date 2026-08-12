@@ -8,6 +8,12 @@ Designed for OpenClaw users adding trading capabilities to their agent, and for 
 
 ---
 
+## Start here
+
+[`superior-trade`](skills/superior-trade/SKILL.md) is the entry skill. It carries the whole path — API key, trading account, funding, strategy selection, backtest, live deployment, monitoring — and hands off to the venue skill once the user has picked one. Point an agent at this skill and it can take someone from no account to a running strategy without further instruction.
+
+Everything below is what it routes to.
+
 ## v2 — Hyperliquid and Aerodrome
 
 v2 contains the Freqtrade-based exchange integrations and the existing crypto strategy library.
@@ -111,21 +117,24 @@ v3 contains Nautilus-based venue integrations.
 | External bridge deposit                   | `skills/external-deposit/SKILL.md`                                                                                            | Relay bridge, MetaMask, OKX, Trust Wallet, prefilled deposit URL |
 | Atomic exit-all                           | `skills/hyperliquid/SKILL.md` → `/v2/portfolio/hyperliquid/exit`                                                 | kill-switch, emergency exit                                    |
 | HIP3 RWA support                          | `skills/hyperliquid/SKILL.md` → HIP3 section                                                                     | tokenized stocks, commodities, indices                         |
-| Polymarket strategy archetypes            | `skills/*`                                                                                           | prediction-market archetypes                                   |
+| Polymarket strategy archetypes            | `skills/probability-momentum/`, `skills/deadline-drift/`, +4                                         | prediction-market archetypes                                   |
 | Managed wallet                            | `skills/hyperliquid/SKILL.md` → Account Setup                                                                    | no-key trading, custodial-style UX                             |
 
 ## Folder layout
 
-Every skill is a self-contained directory under `skills/v2/` or `skills/v3/`, following the [Agent Skills](https://agentskills.io) standard.
+Every skill is a self-contained directory at `skills/<name>/`, following the [Agent Skills](https://agentskills.io) standard. Skill loaders resolve exactly one level, so this depth is a hard requirement rather than a convention — a skill nested any deeper is never discovered. `pnpm validate` enforces it.
 
-- `SKILL.md` (repo root) — auth/onboarding: request an API key by email and use the `x-api-key` header. Also served at `superior.trade/SKILL.md`.
-- `skills/` — Hyperliquid and Aerodrome exchange integrations.
-- `skills/` — existing Hyperliquid/Freqtrade strategy templates and validated drop-ins.
-- `skills/` — reusable v2 primitives: `regime-overlay`, `dsl-exit-engine`, `fees-optimizations`, `backtesting`, `trade-thesis`, and `intelligence`.
-- `skills/` — Polymarket and Lighter Nautilus venue integrations.
-- `skills/` — reusable v3 helpers such as `deposit-qr`.
-- `skills/` — prediction-market archetype skills used with Polymarket v3 workflows.
-- `skills/external-deposit/` — quote-backed third-party bridge/deposit UI helpers, wallet app links, and same-chain ERC-20 transfer QRs.
+```
+SKILL.md                     auth/onboarding, also served at superior.trade/SKILL.md
+skills/superior-trade/       start here — access → funding → backtest → deploy
+skills/<venue>/              hyperliquid, polymarket, lighter, lighter-robinhood, aerodrome
+skills/<strategy>/           dca-weekly, grid-trading, breakout, mean-reversion, …
+skills/<primitive>/          regime-overlay, dsl-exit-engine, fees-optimizations, backtesting, trade-thesis
+skills/<archetype>/          probability-momentum, deadline-drift, catalyst-confirmation, …
+skills/<funding>/            deposit-qr, external-deposit
+```
+
+Larger skills keep `SKILL.md` to a spine — safety rules, gotchas, workflow, routing — and move detail into `references/`, loaded only when the task calls for it.
 
 ## Getting started
 
@@ -162,14 +171,14 @@ skill with a `SKILL.md`. Install through whichever entry point your agent uses:
 | **Claude Code**                                                                    | `/plugin marketplace add Superior-Trade/superior-skills` then `/plugin install superior-skills@superior-trade`               |
 | **OpenClaw / ClawHub**                                                             | `openclaw skills install superior-skills` &nbsp;·&nbsp; or `openclaw skills install git:Superior-Trade/superior-skills@main` |
 | **From our domain**                                                                | point any agent at `https://superior.trade/SKILL.md`                                                                         |
-| **Manual**                                                                         | clone this repo and copy the needed folder from `skills/v2/...` or `skills/v3/...` into your agent's skills folder           |
+| **Manual**                                                                         | clone this repo and copy the needed `skills/<name>/` folder into your agent's skills folder           |
 
 Installing the repo pulls the whole library; grab a single skill with `--skill <name>` (npx) or
 by naming it (`gh skill install Superior-Trade/superior-skills <name>`).
 
 Hyperliquid, Aerodrome, and Lighter skills need a **`SUPERIOR_TRADE_API_KEY`**; Polymarket skills use
-**`SUPERIOR_TRADE_PM_API_KEY`**. The root `SKILL.md` (`superior-trade-auth`) walks a new user
-through getting a key by email.
+**`SUPERIOR_TRADE_PM_API_KEY`**. New users should start with the `superior-trade` skill, which walks the whole path from
+getting a key to a running strategy and then hands off to the venue skill.
 
 ## Workflow
 

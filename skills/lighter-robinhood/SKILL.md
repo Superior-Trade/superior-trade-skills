@@ -1,6 +1,6 @@
 ---
 name: lighter-robinhood
-description: "Use Robinhood Chain Lighter through Superior Trade with exchange name lighter-robinhood."
+description: "Use when trading Robinhood Chain Lighter through Superior Trade, or when a config needs the exchange name lighter-robinhood."
 metadata:
   version: 1.0.0
   updated: 2026-07-16

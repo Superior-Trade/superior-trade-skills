@@ -1,6 +1,6 @@
 ---
 name: funding-squeeze
-description: Use when writing a strategy that captures short-squeeze setups on Hyperliquid perps — anything described as squeeze, short squeeze fuel, negative funding rally, fade the shorts, paid to long. Goes long when funding APR is deeply negative (shorts paying longs) AND price has been rising, exits on funding normalisation or time-stop. Sibling of strategy-funding-harvest but reads the squeeze-fuel signal instead of the carry.
+description: "Use when writing a strategy that captures short-squeeze setups on Hyperliquid perps — squeeze, short squeeze fuel, negative funding rally, fade the shorts, paid to long. Goes long when funding APR is deeply negative and price is already rising, then exits on funding normalisation or a time stop."
 metadata:
   version: 0.1.0
   updated: 2026-05-08

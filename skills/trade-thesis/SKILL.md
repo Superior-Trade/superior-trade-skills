@@ -1,6 +1,6 @@
 ---
 name: trade-thesis
-description: "Structured pre-trade thesis builder — bull/bear cases, invalidation criteria, and sizing rationale before any live deployment. Read this page when a user proposes a trade idea, says 'should I trade X', asks for a bull/bear case, wants a pre-trade analysis, or before the agent deploys a new strategy live for the first time."
+description: "Use when a user proposes a trade idea, asks whether they should trade something, wants a bull/bear case or pre-trade analysis, or before deploying any new strategy live for the first time. Builds a structured thesis: bull and bear cases, invalidation criteria, and a sizing rationale."
 metadata:
   version: 0.1.0
   updated: 2026-06-07

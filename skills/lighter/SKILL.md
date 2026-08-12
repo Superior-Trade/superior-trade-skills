@@ -1,6 +1,6 @@
 ---
 name: lighter
-description: "Onboard, fund, place immediate orders, withdraw, proxy signed Lighter transactions, and deploy Lighter Nautilus strategies through Superior Trade."
+description: "Use when onboarding, funding, trading, or withdrawing on Lighter through Superior Trade — account bootstrap, CCTP deposits from a Superior wallet, immediate orders, withdrawals, proxying signed Lighter transactions, or deploying and monitoring a Lighter Nautilus strategy."
 metadata:
   version: 1.0.2
   updated: 2026-07-22

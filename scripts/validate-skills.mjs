@@ -159,13 +159,18 @@ for (const file of files) {
   }
 
   // A references/ file nobody is told to read is a file that never loads.
+  // Skipped for the root SKILL.md, whose sibling scripts/ is repo tooling
+  // rather than skill supporting files.
   const skillDir = dirname(file);
-  for (const sub of ["references", "assets", "scripts"]) {
-    const subdir = join(skillDir, sub);
-    if (!existsSync(subdir) || !statSync(subdir).isDirectory()) continue;
-    for (const f of readdirSync(subdir)) {
-      if (!body.includes(`${sub}/${f}`)) {
-        warnings.push(`${rel}: ${sub}/${f} is never referenced from SKILL.md`);
+  if (rel !== "SKILL.md") {
+    for (const sub of ["references", "assets", "scripts"]) {
+      const subdir = join(skillDir, sub);
+      if (!existsSync(subdir) || !statSync(subdir).isDirectory()) continue;
+      for (const f of readdirSync(subdir)) {
+        if (f.includes(".test.")) continue;
+        if (!body.includes(`${sub}/${f}`)) {
+          warnings.push(`${rel}: ${sub}/${f} is never referenced from SKILL.md`);
+        }
       }
     }
   }

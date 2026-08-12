@@ -56,11 +56,22 @@ The email is verified once the API key is used successfully in an authenticated 
 - Never request or handle private keys, seed phrases, or wallet credentials.
 - Never start live trading, deposits, or other fund-moving actions without the explicit confirmations required by the relevant Superior Trade trading skill.
 
-## Related Skills
+## Next: the rest of the library
 
-- Use the v2 `skills/hyperliquid` skill for Hyperliquid strategy backtests, deployments, wallets, funding, and live trading workflows.
-- Use the v2 `skills/aerodrome` skill for Aerodrome/Base spot-AMM strategy workflows.
-- Use the v3 `skills/polymarket` skill for Polymarket market discovery, backtests, deployments, and funding workflows.
-- Use the v3 `skills/lighter` skill for Lighter account bootstrap, Superior-wallet CCTP deposits, secure returns to the Superior wallet, and Nautilus deployments.
-- Use the v3 `skills/deposit-qr` skill when a user needs a QR code or payment URI to fund a Superior-managed wallet on a specific EVM chain.
-- Use the `skills/external-deposit` skill when a user needs an external bridge/deposit UI link, Relay quote, MetaMask Mobile QR URL, or Robinhood Chain USDG bridge flow.
+This page covers authentication only. Everything past the API key — funding, strategy selection, backtesting, deployment — lives in the installable skill library.
+
+Install it:
+
+```bash
+npx skills add Superior-Trade/superior-skills
+```
+
+Then load `skills/superior-trade`, which owns the full path from an empty account to a running strategy and hands off to the venue skills.
+
+- `skills/superior-trade` — start here; the access → funding → backtest → deploy path
+- `skills/hyperliquid` — Hyperliquid perps and spot, including HIP-3 stocks and commodities
+- `skills/polymarket` — Polymarket discovery, backtests, and deployments
+- `skills/lighter` — Lighter bootstrap, CCTP deposits, returns, and Nautilus deployments
+- `skills/aerodrome` — Aerodrome/Base spot-AMM workflows
+- `skills/deposit-qr` — QR code or payment URI to fund a Superior-managed wallet
+- `skills/external-deposit` — external bridge links, Relay quotes, MetaMask Mobile QR
