@@ -238,8 +238,8 @@ If the same task fails 3+ times (e.g. strategy source/config keeps failing, back
 9. Review results    →  Poll/read backtest status/result/logs; analyze performance; iterate or proceed
 10. Plan deployment  →  POST /v3/deployment with `{ deployment: { code, config } }`
 11. Store credentials → POST /v3/deployment/{id}/credentials with an owned `wallet_address`
-12. Start            →  Confirm with user → PATCH/PUT /v3/deployment/{id}/status `{ "action": "start" }`
-13. Monitor/stop     →  Status/logs plus live positions/orders; stop with PATCH/PUT `/v3/deployment/{id}/status` `{ "action": "stop" }`
+12. Start            →  Confirm with user → PATCH /v3/deployment/{id}/status `{ "action": "start" }`
+13. Monitor/stop     →  Status/logs plus live positions/orders; stop with PATCH `/v3/deployment/{id}/status` `{ "action": "stop" }`
 ```
 
 Deployment start requires both credential metadata and explicit user confirmation.
@@ -267,7 +267,7 @@ Filled-data rule: Polymarket strategy logic should be driven by historical `Trad
 
 ### Pre-Deployment Checklist (MANDATORY)
 
-Before `PATCH /v3/deployment/{id}/status` or `PUT /v3/deployment/{id}/status` → `{"action":"start"}`:
+Before `PATCH /v3/deployment/{id}/status` → `{"action":"start"}`:
 
 1. **Backtest reviewed** — at least one completed backtest for this strategy code/config or materially similar logic, results shown to the user.
 2. **Wallet readiness checked** — `GET /v3/account/{address}/status/polymarket` returns `onboarding.ready: true`. If not ready, resolve the blockers first; common blockers are no wallet, not onboarded, approvals missing, or balance below 5 USDC.

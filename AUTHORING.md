@@ -60,13 +60,43 @@ The `skill-creator` plugin automates the with/without comparison:
 /plugin install skill-creator@claude-plugins-official
 ```
 
+## Endpoints come from the API's contract, not from memory
+
+The API publishes a curated OpenAPI surface **for this library** at
+`GET /v3/agent-skill/openapi.json`. That is the source of truth for what an agent
+is sanctioned to call. Snapshots of it — and of the two general specs — live in
+`scripts/api-contract/` and are committed, so the check is deterministic offline
+and a contract change arrives as a reviewable diff instead of a silent flip.
+
+`pnpm validate` runs the audit. It reports two things:
+
+- **ERROR — in no published contract.** The skill is sending agents at something
+  that does not exist. Two of these had been shipped and live for months before
+  anyone called them.
+- **WARN — resolves, but is not in the agent-skill contract.** It works today,
+  but nobody has promised agents it will keep working. A cluster of these usually
+  means a venue shipped ahead of the contract; raise it with the API team rather
+  than silencing it.
+
+Re-download the snapshots deliberately, never as part of a routine run:
+
+```bash
+SUPERIOR_TRADE_API_KEY=... pnpm contract:refresh
+```
+
+Hand-maintained endpoint lists in skill files go stale silently. Prefer telling
+the agent to discover — the HIP-3 ticker list was half a universe out of date
+before it was replaced by the `{"type":"meta","dex":"xyz"}` call.
+
 ## Before you push
 
 ```bash
 pnpm validate
 ```
 
-Checks layout depth, frontmatter spec compliance, description budget, body size, and that every `references/` file is actually pointed at from its `SKILL.md`.
+Checks layout depth, frontmatter spec compliance, description budget, body size,
+that every `references/` file is actually pointed at from its `SKILL.md`, and
+every endpoint claim against the API's published contracts.
 
 ## Sources
 

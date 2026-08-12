@@ -572,7 +572,7 @@ Plans and persists a single v3 Polymarket deployment. Alias: `POST /v3/deploymen
 
 The endpoint rejects `private_key` and rejects wallet addresses not owned by the authenticated user.
 
-#### PATCH/PUT `/v3/deployment/{id}/status` — Start or Stop
+#### PATCH `/v3/deployment/{id}/status` — Start or Stop
 
 ```json
 // Request
