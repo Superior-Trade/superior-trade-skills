@@ -51,7 +51,9 @@ Work through these in order. Skip a step only after an API call confirms it is a
 
 ### 1. Credentials
 
-If `SUPERIOR_TRADE_API_KEY` is already in the environment, use it and move on — do not ask the user for it.
+**Which variable depends on the venue.** Hyperliquid, Lighter, and Aerodrome read `SUPERIOR_TRADE_API_KEY`. Polymarket reads `SUPERIOR_TRADE_PM_API_KEY` — a separate key, not the same value under a second name. If the user has not picked a venue yet, ask before telling them where to put the key, or they will set the wrong one and hit an auth failure at the first real call.
+
+If the right variable is already in the environment, use it and move on — do not ask the user for it.
 
 If it is missing, ask for the email address that should receive the key, then:
 
