@@ -3,7 +3,6 @@ name: lighter
 version: 1.0.2
 updated: 2026-07-22
 description: "Onboard, fund, place immediate orders, withdraw, proxy signed Lighter transactions, and deploy Lighter Nautilus strategies through Superior Trade."
-homepage: https://account.superior.trade
 source: https://github.com/Superior-Trade
 primaryEnv: SUPERIOR_TRADE_API_KEY
 auth:
@@ -13,7 +12,7 @@ auth:
   scope: "Read-write the user's own Lighter account readiness, funding operations, immediate market orders, withdrawals, signed transaction proxy submissions, and live Nautilus deployments. Can create CCTP deposit intents, fund them from a confirmed Superior wallet, place one confirmed Lighter market order with stored credentials, securely return Lighter USDC to the Superior owner wallet, submit user-approved pre-signed Lighter transactions, and start live Lighter deployments that execute real trades. Cannot export private keys, withdraw directly to arbitrary external wallets, or access other users' data."
 env:
   - name: SUPERIOR_TRADE_API_KEY
-    description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade. Can onboard Lighter accounts, create deposit intents, place immediate Lighter market orders, submit withdrawals, proxy signed Lighter transactions, and manage Lighter Nautilus deployments for the user's owned Superior trading wallets."
+    description: "Superior Trade API key (x-api-key header). Obtained from the user's Superior Trade account settings. Can onboard Lighter accounts, create deposit intents, place immediate Lighter market orders, submit withdrawals, proxy signed Lighter transactions, and manage Lighter Nautilus deployments for the user's owned Superior trading wallets."
     required: true
     type: api_key
 externalEndpoints:

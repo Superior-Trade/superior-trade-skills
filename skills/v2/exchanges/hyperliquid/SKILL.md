@@ -3,7 +3,6 @@ name: hyperliquid
 version: 4.5.1
 updated: 2026-06-30
 description: "Backtest and deploy trading strategies on Superior Trade's managed cloud."
-homepage: https://account.superior.trade
 source: https://github.com/Superior-Trade
 primaryEnv: SUPERIOR_TRADE_API_KEY
 auth:
@@ -13,7 +12,7 @@ auth:
   scope: "Read-write the user's own backtests and deployments. Can start live trading deployments that execute real trades with the user's platform-managed trading wallet, deposit native Arbitrum USDC from that wallet into Hyperliquid, and return Hyperliquid USDC to the user's server-resolved Superior wallet. Cannot export private keys, bypass the Superior wallet for withdrawals, move unsupported assets/chains, or access other users' data."
 env:
   - name: SUPERIOR_TRADE_API_KEY
-    description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade. Can create/manage backtests and deployments including live trading, deposit native Arbitrum USDC from the user's platform-managed wallet into Hyperliquid, and return Hyperliquid USDC to the user's server-resolved Superior wallet. Cannot export private keys, bypass the Superior wallet for withdrawals, move unsupported assets/chains, or access other users' data. Users do not need their own Hyperliquid wallet."
+    description: "Superior Trade API key (x-api-key header). Obtained from the user's Superior Trade account settings. Can create/manage backtests and deployments including live trading, deposit native Arbitrum USDC from the user's platform-managed wallet into Hyperliquid, and return Hyperliquid USDC to the user's server-resolved Superior wallet. Cannot export private keys, bypass the Superior wallet for withdrawals, move unsupported assets/chains, or access other users' data. Users do not need their own Hyperliquid wallet."
     required: true
     type: api_key
 externalEndpoints:
@@ -35,20 +34,17 @@ API client skill for backtesting and deploying trading strategies on Superior Tr
 
 ### Getting an API Key
 
-> **IMPORTANT:** The correct URL is **https://account.superior.trade** — NOT `app.superior.trade`. Never send users to `app.superior.trade`.
-
 Use `SUPERIOR_TRADE_API_KEY` from the environment or credential manager.
 
 When a user needs to get their API key:
 
-1. Go to https://account.superior.trade
-2. Sign up (email or wallet)
-3. Create or select a trading account wallet from `GET /v3/account`
-4. Fund the platform trading wallet with native USDC on Arbitrum One using the user's own capital
-5. Create an API key (`st_live_...`) from your account settings
-6. Add it as `SUPERIOR_TRADE_API_KEY` in your agent's environment/credential settings
-7. Bootstrap Hyperliquid setup with `POST /v3/account/{address}/hyperliquid` for the selected trading wallet
-8. If the wallet's USDC is still on Arbitrum, use `POST /v2/portfolio/hyperliquid/deposit` to deposit it into Hyperliquid before live trading
+1. Sign up for or open a Superior Trade account
+2. Create or select a trading account wallet from `GET /v3/account`
+3. Fund the platform trading wallet with native USDC on Arbitrum One using the user's own capital
+4. Create an API key (`st_live_...`) from account settings
+5. Add it as `SUPERIOR_TRADE_API_KEY` in your agent's environment/credential settings
+6. Bootstrap Hyperliquid setup with `POST /v3/account/{address}/hyperliquid` for the selected trading wallet
+7. If the wallet's USDC is still on Arbitrum, use `POST /v2/portfolio/hyperliquid/deposit` to deposit it into Hyperliquid before live trading
 
 If the `SUPERIOR_TRADE_API_KEY` env var is already set, use it directly in the `x-api-key` header without prompting the user.
 
@@ -102,7 +98,7 @@ This skill requires exactly **one credential**: an `x-api-key` header value. The
 5. **NEVER** fabricate wallet balances, API responses, or trade results
 6. **NEVER** start a live deployment without explicit user confirmation
 7. **Prefer user-friendly language** over internal technical names when speaking conversationally. Say "strategy", "the bot", or "the trading engine" instead of referencing internal class names or infrastructure details. This is a UX preference — if the user asks about the underlying technology, answer honestly (the platform uses Freqtrade for strategy execution on Hyperliquid).
-8. **NEVER** send users to `app.superior.trade` — the correct URL is `https://account.superior.trade`
+8. **NEVER** send users to `app.superior.trade`
 
 > **Key scope notice:** The API key can create and start live trading deployments that execute real trades using the user's platform-managed trading wallet. It can also initiate native Arbitrum USDC deposits into Hyperliquid and return Hyperliquid USDC to the user's Superior wallet. It cannot export private keys, bypass the Superior wallet for withdrawals, or move unsupported assets/chains. Users should confirm scope with Superior Trade and backtest their strategy first.
 
@@ -141,7 +137,7 @@ Do NOT start a live deployment without an explicit affirmative response.
 
 Superior Trade uses Hyperliquid's native **agent wallet** pattern. Users do NOT need their own Hyperliquid wallet — everything is managed by the platform. If a user asks "how do I link my Hyperliquid account," the answer is: **they don't need one** — create or select a Superior trading account wallet with `GET /v3/account` / `POST /v3/account`, then bootstrap Hyperliquid setup with `POST /v3/account/{address}/hyperliquid`.
 
-1. **Main wallet** — a platform-managed trading account wallet. Users fund this address with native USDC on Arbitrum One, then deposit that USDC into Hyperliquid using the API when needed. The address is shown at https://account.superior.trade and returned by `GET /v3/account`.
+1. **Main wallet** — a platform-managed trading account wallet. Users fund this address with native USDC on Arbitrum One, then deposit that USDC into Hyperliquid using the API when needed. The address is shown in the user's Superior Trade account and returned by `GET /v3/account`.
 2. **Agent wallet** — a platform-managed signing key authorized via Hyperliquid's `approveAgent`. Signs trades against the main wallet's balance.
 
 **Key facts:**
@@ -160,7 +156,7 @@ Superior Trade uses Hyperliquid's native **agent wallet** pattern. Users do NOT 
 
 Funding is a two-stage flow:
 
-1. The user funds their platform-managed trading wallet with native USDC on Arbitrum One using their own capital. The wallet address is shown at https://account.superior.trade.
+1. The user funds their platform-managed trading wallet with native USDC on Arbitrum One using their own capital. The wallet address is shown in the user's Superior Trade account.
 2. The agent can call `POST /v2/portfolio/hyperliquid/deposit` to transfer native Arbitrum USDC from that platform wallet to Hyperliquid Bridge2.
 3. After the deposit confirms, the agent wallet signs trades against the main wallet's Hyperliquid balance.
 

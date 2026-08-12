@@ -13,7 +13,7 @@ auth:
   scope: "Read-write the user's own Robinhood Chain Lighter deployment plans and signed transaction proxy submissions. Cannot export private keys or access other users' data."
 env:
   - name: SUPERIOR_TRADE_API_KEY
-    description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade."
+    description: "Superior Trade API key (x-api-key header). Obtained from the user's Superior Trade account settings."
     required: true
     type: api_key
 externalEndpoints:
