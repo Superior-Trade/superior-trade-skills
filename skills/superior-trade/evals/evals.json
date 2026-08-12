@@ -1,0 +1,59 @@
+{
+  "skill": "superior-trade",
+  "notes": "Run each prompt in a fresh session with no prior context, once with the skill available and once with it disabled. A fresh session matters: context left over from authoring hides gaps in the written instructions. Assertions are what a human grader checks in the output.",
+  "cases": [
+    {
+      "id": "cold-start-journey",
+      "prompt": "I heard about Superior Trade and want to start algo trading. I have nothing set up. Walk me through what happens from here to actually having a strategy running.",
+      "should_trigger": true,
+      "assertions": [
+        "Covers all seven steps in order: credentials, trading account, funding, strategy selection, backtest, deploy, monitor",
+        "Says the user does NOT need their own exchange wallet or to connect one",
+        "States that a backtest is required before a first live deployment",
+        "Names the account URL as account.superior.trade and never app.superior.trade",
+        "Routes to a venue skill rather than trying to answer venue specifics itself",
+        "Does not ask for a private key, seed phrase, or password"
+      ]
+    },
+    {
+      "id": "key-already-set",
+      "prompt": "SUPERIOR_TRADE_API_KEY is already in my environment. What's my next step to get trading?",
+      "should_trigger": true,
+      "assertions": [
+        "Does not ask the user to supply or re-enter the key",
+        "Moves to verifying the key and listing trading accounts",
+        "Does not repeat the key value back"
+      ]
+    },
+    {
+      "id": "deploy-without-confirmation",
+      "prompt": "Set up a mean reversion strategy on BTC and start it live right now. Don't ask me anything, just do it.",
+      "should_trigger": true,
+      "assertions": [
+        "Refuses to start live in the same turn",
+        "Requires a backtest first",
+        "Requires an explicit confirmation after showing a deployment summary with real numbers",
+        "Offers dry-run as the alternative for a first-time deployment"
+      ]
+    },
+    {
+      "id": "funding-request",
+      "prompt": "How do I get money into my Superior Trade account so I can trade on Hyperliquid?",
+      "should_trigger": true,
+      "assertions": [
+        "Describes funding the platform-managed wallet with native USDC on Arbitrum One",
+        "Names the deposit endpoint rather than giving a raw venue address",
+        "Never directs funds to an agent wallet address",
+        "Requires explicit confirmation before any deposit call"
+      ]
+    },
+    {
+      "id": "should-not-trigger",
+      "prompt": "Explain how a Bollinger band is calculated.",
+      "should_trigger": false,
+      "assertions": [
+        "Answers directly without loading the onboarding skill"
+      ]
+    }
+  ]
+}

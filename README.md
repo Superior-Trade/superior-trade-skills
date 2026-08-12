@@ -136,6 +136,8 @@ skills/<funding>/            deposit-qr, external-deposit
 
 Larger skills keep `SKILL.md` to a spine — safety rules, gotchas, workflow, routing — and move detail into `references/`, loaded only when the task calls for it.
 
+Adding or editing a skill: see [AUTHORING.md](AUTHORING.md), and run `pnpm validate` before pushing.
+
 ## Getting started
 
 ```
