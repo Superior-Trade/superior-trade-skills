@@ -179,7 +179,7 @@ Installing the repo pulls the whole library; grab a single skill with `--skill <
 by naming it (`gh skill install Superior-Trade/superior-skills <name>`).
 
 Hyperliquid, Aerodrome, and Lighter skills need a **`SUPERIOR_TRADE_API_KEY`**; Polymarket skills use
-**`SUPERIOR_TRADE_PM_API_KEY`**. New users should start with the `superior-trade` skill, which walks the whole path from
+**`SUPERIOR_TRADE_API_KEY`**. New users should start with the `superior-trade` skill, which walks the whole path from
 getting a key to a running strategy and then hands off to the venue skill.
 
 ## Workflow

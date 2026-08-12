@@ -26,12 +26,12 @@
       ]
     },
     {
-      "id": "correct-key-per-venue",
-      "prompt": "I want to trade prediction markets on Polymarket. How do I get set up?",
+      "id": "one-key-all-venues",
+      "prompt": "I want to trade prediction markets on Polymarket. Do I need a different API key from the one I use for Hyperliquid?",
       "should_trigger": true,
       "assertions": [
-        "Names SUPERIOR_TRADE_PM_API_KEY, not SUPERIOR_TRADE_API_KEY, as the variable to set",
-        "Does not tell the user to reuse the Hyperliquid key value under a second name",
+        "States that one SUPERIOR_TRADE_API_KEY covers every venue",
+        "Does not invent a separate prediction-market key or a second env var",
         "Hands off to the polymarket skill for venue specifics"
       ]
     },

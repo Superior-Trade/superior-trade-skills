@@ -6,15 +6,15 @@ metadata:
   updated: 2026-08-12
   homepage: https://superior.trade
   source: https://github.com/Superior-Trade
-  primaryEnv: SUPERIOR_TRADE_PM_API_KEY
+  primaryEnv: SUPERIOR_TRADE_API_KEY
   auth:
     type: api_key
-    env: SUPERIOR_TRADE_PM_API_KEY
+    env: SUPERIOR_TRADE_API_KEY
     header: "x-api-key"
     scope: "Read-write the user's own v3 trading accounts, Polymarket funding actions, immediate market orders, backtests, and deployments. Can bootstrap Polymarket setup, deposit Polygon USDC/USDC.e into pUSD, place a single confirmed Polymarket market order, plan/start live deployments after explicit confirmation, and close Polymarket positions. Cannot export private keys or access other users' data."
   env:
-    - name: SUPERIOR_TRADE_PM_API_KEY
-      description: "Superior Trade prediction market API key. The main API accepts x-api-key for product API keys and Bearer auth for user sessions. Can create/manage trading accounts, Polymarket onboarding/funding, immediate Polymarket market orders, v3 backtests, and deployments. Cannot export private keys or access other users' data."
+    - name: SUPERIOR_TRADE_API_KEY
+      description: "Superior Trade API key, sent as the x-api-key header. The same key used for every other venue. Can create/manage trading accounts, Polymarket onboarding/funding, immediate Polymarket market orders, v3 backtests, and deployments. Cannot export private keys or access other users' data."
       required: true
       type: api_key
   externalEndpoints:
@@ -61,13 +61,13 @@ Environment-specific facts that defy reasonable assumptions. Read these before a
 
 ### API Key
 
-This skill uses an existing Superior Trade API key:
+This skill uses the same Superior Trade API key as every other venue — there is no separate prediction-market key:
 
 ```
-x-api-key: $SUPERIOR_TRADE_PM_API_KEY
+x-api-key: $SUPERIOR_TRADE_API_KEY
 ```
 
-If `SUPERIOR_TRADE_PM_API_KEY` is not set, ask the user to provide or configure their Superior Trade API key through their normal credential flow. Do **not** call `POST /v3/account/onboard`; that path is not part of the current main API.
+If `SUPERIOR_TRADE_API_KEY` is not set, ask the user to provide or configure their Superior Trade API key through their normal credential flow. Do **not** call `POST /v3/account/onboard`; that path is not part of the current main API.
 
 ### Wallet and Funding
 
@@ -111,7 +111,7 @@ Use `POST /v3/authorize-and-send/polymarket` when the user asks to place one imm
 
 Required sequence:
 
-1. Confirm auth with `SUPERIOR_TRADE_PM_API_KEY`.
+1. Confirm auth with `SUPERIOR_TRADE_API_KEY`.
 2. Fetch `GET /v3/account`.
 3. Set `action.from` only to a `wallet_address` returned in `items[]`. Never trust or invent an arbitrary `from` address; if the user supplied one, verify it appears in the account list before using it.
 4. Check `GET /v3/account/{address}/status/polymarket` for that wallet. If onboarding, approvals, credentials, or available pUSD balance are not ready for the requested order, stop and report the blocker.
@@ -162,7 +162,7 @@ Do not advertise old/stale paths: `/v3/account/onboard`, `/v3/account/wallets`, 
 
 ### Security & Permissions
 
-This skill requires exactly **one credential**: a Superior Trade API key. The only secret the agent uses is `SUPERIOR_TRADE_PM_API_KEY`.
+This skill requires exactly **one credential**: a Superior Trade API key. The only secret the agent uses is `SUPERIOR_TRADE_API_KEY`.
 
 **Security rules (non-negotiable):**
 
@@ -228,7 +228,7 @@ If the same task fails 3+ times (e.g. strategy source/config keeps failing, back
 ## Workflow
 
 ```
-1. Confirm auth      →  Use existing `SUPERIOR_TRADE_PM_API_KEY`
+1. Confirm auth      →  Use existing `SUPERIOR_TRADE_API_KEY`
 2. Account setup     →  GET/POST /v3/account, then POST /v3/account/{address}/polymarket
 3. Check readiness   →  GET /v3/account/{address}/status/polymarket; deposit if needed
 4. Read live state   →  For holdings/order questions, fetch positions and open orders for the owned wallet
