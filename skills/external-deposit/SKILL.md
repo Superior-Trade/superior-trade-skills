@@ -15,7 +15,7 @@ Use this skill for deposits that should be completed in an external wallet or th
 - A QR transaction attempt shows unexpectedly high gas or wrong-network behavior.
 - The flow is not a simple native/ERC-20 transfer to a known Superior-managed wallet.
 
-Use `skills/v3/primitives/deposit-qr` only for simple wallet funding QRs: native token sends or ERC-20 `transfer` payment URIs to a destination address.
+Use `skills/deposit-qr` only for simple wallet funding QRs: native token sends or ERC-20 `transfer` payment URIs to a destination address.
 
 ## Safety Rules
 
