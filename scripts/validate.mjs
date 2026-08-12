@@ -68,6 +68,21 @@ if (skillPaths.length === 0) {
   throw new Error("No skills found under skills/");
 }
 
+// Skill loaders resolve exactly one level: `skills/<name>/SKILL.md`. A skill
+// nested any deeper is silently invisible — it does not appear in the skill
+// listing and cannot be invoked. Verified against a live Claude Code session:
+// a skill at skills/v2/exchanges/hyperliquid/ was not discovered, while a
+// sibling at skills/flatskill/ was.
+const nested = skillPaths.filter(
+  (skillPath) => skillPath.split("/").length !== 2,
+);
+if (nested.length > 0) {
+  throw new Error(
+    `Skills must live at skills/<name>/SKILL.md. Nested skills are never ` +
+      `discovered by the loader:\n  ${nested.join("\n  ")}`,
+  );
+}
+
 for (const skillDirectory of skillPaths) {
   const skillPath = `${skillDirectory}/SKILL.md`;
   const fullPath = await assertFile(skillPath);
@@ -79,11 +94,12 @@ for (const skillDirectory of skillPaths) {
 }
 
 const requiredSkillPaths = [
-  "skills/v2/exchanges/hyperliquid",
-  "skills/v2/exchanges/aerodrome",
-  "skills/v3/exchanges/polymarket",
-  "skills/v3/exchanges/lighter",
-  "skills/v3/primitives/deposit-qr",
+  "skills/superior-trade",
+  "skills/hyperliquid",
+  "skills/aerodrome",
+  "skills/polymarket",
+  "skills/lighter",
+  "skills/deposit-qr",
 ];
 
 for (const requiredSkillPath of requiredSkillPaths) {
@@ -99,11 +115,22 @@ for (const [label, contents] of [
   ["README.md", readme],
   ["SKILL.md", rootSkill],
 ]) {
-  if (!contents.includes("skills/v2/") || !contents.includes("skills/v3/")) {
-    throw new Error(`${label} must reference both skills/v2 and skills/v3`);
+  if (!contents.includes("skills/superior-trade")) {
+    throw new Error(`${label} must point new users at skills/superior-trade`);
   }
-  if (!contents.includes("skills/v3/primitives/deposit-qr")) {
-    throw new Error(`${label} must reference skills/v3/primitives/deposit-qr`);
+}
+
+// Any skills/<name>/ path named in prose must actually exist, so the entry
+// skill's routing table can't rot into dead ends.
+const linkedSkills = new Set(
+  [...readme.matchAll(/skills\/([a-z0-9-]+)\//g)].map((m) => m[1]),
+);
+for (const rootLink of rootSkill.matchAll(/skills\/([a-z0-9-]+)\//g)) {
+  linkedSkills.add(rootLink[1]);
+}
+for (const linked of linkedSkills) {
+  if (!skillPaths.includes(`skills/${linked}`)) {
+    throw new Error(`README/SKILL.md links skills/${linked}, which does not exist`);
   }
 }
 

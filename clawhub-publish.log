@@ -1,0 +1,113 @@
+=== loop started 2026年06月22日 下午 06:01:01 ===
+--- batch 1 2026年06月22日 下午 06:01:01 ---
+┌  ClawHub sync
+- Scanning for local skills
+Roots with skills: ~\Desktop\superior\_clones\superior-skills\skills
+- Parsing local skills
+- Checking registry sync state
+
+To sync
+- catalyst-confirmation  NEW  (1 files)
+- dca-weekly  NEW  (1 files)
+- deadline-drift  NEW  (1 files)
+- donchian-strong-regime  NEW  (1 files)
+- dsl-exit-engine  NEW  (1 files)
+- fees-optimizations  NEW  (1 files)
+- funding-rate-arbitrage  UPDATE 1.0.0 → 1.0.1  (1 files)
+- funding-squeeze  NEW  (1 files)
+- grid-trading  UPDATE 1.5.3 → 1.5.4  (1 files)
+- intelligence  NEW  (5 files)
+- large-fill-pressure  NEW  (1 files)
+- mean-reversion  NEW  (1 files)
+- polymarket  UPDATE 1.2.1 → 1.2.2  (2 files)
+- probability-mean-reversion  NEW  (1 files)
+- probability-momentum  NEW  (1 files)
+- regime-overlay  NEW  (1 files)
+- related-market-spread  NEW  (1 files)
+- scalping  NEW  (1 files)
+- superior-trade-hyperliquid  NEW  (1 files)
+- trade-thesis  NEW  (1 files)
+
+Already synced
+- aerodrome  synced (1.0.0)
+- backtesting  synced (1.0.0)
+- basis-arb  synced (1.0.0)
+- bollinger-reverter-4h  synced (1.0.0)
+- breakout  synced (1.0.0)
+- Preparing catalyst-confirmation@1.0.0
+[31m✖[39m Uncaught ConvexError: Rate limit: max 5 new skills per hour. Please wait before publishing more.
+    at enforceNewSkillRateLimit (../../convex/skills.ts:1498:6)
+    at handler (../../convex/skills.ts:11944:6)
+    at async handler (../../node_modules/convex-helpers/server/customFunctions.js:268:27)
+ (remaining: 2999/3000, reset in 49s)
+Error: Uncaught ConvexError: Rate limit: max 5 new skills per hour. Please wait before publishing more.
+    at enforceNewSkillRateLimit (../../convex/skills.ts:1498:6)
+    at handler (../../convex/skills.ts:11944:6)
+    at async handler (../../node_modules/convex-helpers/server/customFunctions.js:268:27)
+ (remaining: 2999/3000, reset in 49s)
+pending after batch 1: 20
+--- batch 2 2026年06月22日 下午 07:06:26 ---
+┌  ClawHub sync
+- Scanning for local skills
+Roots with skills: ~\Desktop\superior\_clones\superior-skills\skills
+- Parsing local skills
+- Checking registry sync state
+
+To sync
+- catalyst-confirmation  NEW  (1 files)
+- dca-weekly  NEW  (1 files)
+- deadline-drift  NEW  (1 files)
+- donchian-strong-regime  NEW  (1 files)
+- dsl-exit-engine  NEW  (1 files)
+- fees-optimizations  NEW  (1 files)
+- funding-rate-arbitrage  UPDATE 1.0.0 → 1.0.1  (1 files)
+- funding-squeeze  NEW  (1 files)
+- grid-trading  UPDATE 1.5.3 → 1.5.4  (1 files)
+- intelligence  NEW  (5 files)
+- large-fill-pressure  NEW  (1 files)
+- mean-reversion  NEW  (1 files)
+- polymarket  UPDATE 1.2.1 → 1.2.2  (2 files)
+- probability-mean-reversion  NEW  (1 files)
+- probability-momentum  NEW  (1 files)
+- regime-overlay  NEW  (1 files)
+- related-market-spread  NEW  (1 files)
+- scalping  NEW  (1 files)
+- superior-trade-hyperliquid  NEW  (1 files)
+- trade-thesis  NEW  (1 files)
+
+Already synced
+- aerodrome  synced (1.0.0)
+- backtesting  synced (1.0.0)
+- basis-arb  synced (1.0.0)
+- bollinger-reverter-4h  synced (1.0.0)
+- breakout  synced (1.0.0)
+- Preparing catalyst-confirmation@1.0.0
+[32m✔[39m OK. Published catalyst-confirmation@1.0.0 (k974d78hce6fe0kg0rqf7gtt818956g8)
+- Preparing dca-weekly@1.0.0
+[32m✔[39m OK. Published dca-weekly@1.0.0 (k97bpydw731hh943spjyxfw2s9894qza)
+- Preparing deadline-drift@1.0.0
+[32m✔[39m OK. Published deadline-drift@1.0.0 (k972ep0d9g1rkk03eva4ra9sfx894x7a)
+- Preparing donchian-strong-regime@1.0.0
+[32m✔[39m OK. Published donchian-strong-regime@1.0.0 (k97dvpkzaa30d9pe6c9xvpy6r9895p0t)
+- Preparing dsl-exit-engine@1.0.0
+[32m✔[39m OK. Published dsl-exit-engine@1.0.0 (k974ctdgjgnvtbks7hk5c9qzp18946c7)
+- Preparing fees-optimizations@1.0.0
+[32m✔[39m OK. Published fees-optimizations@1.0.0 (k97e4rkwaqp3bjghnmj6gq06ex895v8w)
+- Preparing funding-rate-arbitrage@1.0.1
+[32m✔[39m OK. Published funding-rate-arbitrage@1.0.1 (k970y8qtj700v701q9mqw2q6xn894vgf)
+- Preparing funding-squeeze@1.0.0
+[32m✔[39m OK. Published funding-squeeze@1.0.0 (k97f8cnbwn9c7cddrckshynjas894xzt)
+- Preparing grid-trading@1.5.4
+[31m✖[39m Uncaught ConvexError: Rate limit: max 5 new skills per hour. Please wait before publishing more.
+    at enforceNewSkillRateLimit (../../convex/skills.ts:1498:6)
+    at handler (../../convex/skills.ts:11944:6)
+    at async handler (../../node_modules/convex-helpers/server/customFunctions.js:268:27)
+ (remaining: 2995/3000, reset in 26s)
+Error: Uncaught ConvexError: Rate limit: max 5 new skills per hour. Please wait before publishing more.
+    at enforceNewSkillRateLimit (../../convex/skills.ts:1498:6)
+    at handler (../../convex/skills.ts:11944:6)
+    at async handler (../../node_modules/convex-helpers/server/customFunctions.js:268:27)
+ (remaining: 2995/3000, reset in 26s)
+pending after batch 2: 0
+=== all published, done at batch 2 2026年06月22日 下午 07:07:43 ===
+=== loop finished 2026年06月22日 下午 07:07:43 ===
