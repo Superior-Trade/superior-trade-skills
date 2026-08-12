@@ -120,7 +120,7 @@ class WeeklyDcaBtcStrategy(IStrategy):
   "exchange": { "name": "hyperliquid", "pair_whitelist": ["BTC/USDC"] },
   "stake_currency": "USDC",
   "stake_amount": 1000,
-  "dry_run_wallet": 10000,
+  "dry_run_wallet": {"USDC": 10000},
   "timeframe": "1d",
   "max_open_trades": 1,
   "stoploss": -0.99,

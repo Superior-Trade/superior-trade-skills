@@ -196,7 +196,7 @@ HIP3 assets (stocks, commodities, indices) are perpetual futures.
 | `HYNA-`  | `hyna`   | Leveraged crypto, metals                  | USDE           | `HYNA-SOL/USDE:USDE`                       |
 | `VNTL-`  | `vntl`   | Sector indices, pre-IPO                   | USDH           | `VNTL-SPACEX/USDH:USDH`                    |
 
-**XYZ tickers (USDC):** AAPL, ALUMINIUM, AMD, AMZN, BABA, BRENTOIL, CL, COIN, COPPER, COST, CRCL, CRWV, DKNG, DXY, EUR, EWJ, EWY, GME, GOLD, GOOGL, HIMS, HOOD, HYUNDAI, INTC, JP225, JPY, KIOXIA, KR200, LLY, META, MSFT, MSTR, MU, NATGAS, NFLX, NVDA, ORCL, PALLADIUM, PLATINUM, PLTR, RIVN, SILVER, SKHX, SMSN, SNDK, SOFTBANK, SP500, TSLA, TSM, URANIUM, URNM, USAR, VIX, XYZ100
+**XYZ tickers (USDC):** do not work from a hard-coded list — the universe grows. Query `{"type":"meta","dex":"xyz"}` and read `universe[].name`; that is the only authoritative set. As of 2026-08-12 it held 109 tickers, including AAPL, AMZN, AVGO, ASML, GOLD, IBM, META, MSFT, NVDA, QCOM, SILVER, SP500, TSLA and URANIUM. If a user names a ticker you do not recognise, check the live universe before telling them it is unavailable.
 
 **Data:** XYZ from ~November 2025, KM/CASH/FLX from ~February 2026. Timeframes: 1m, 3m, 5m, 15m, 30m, 1h (also 2h, 4h, 8h, 12h, 1d, 3d, 1w for some). Funding rate data at 1h.
 

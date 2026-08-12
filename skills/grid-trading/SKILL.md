@@ -122,7 +122,7 @@ class EthGridStrategy(IStrategy):
   "exchange": { "name": "hyperliquid", "pair_whitelist": ["ETH/USDC"] },
   "stake_currency": "USDC",
   "stake_amount": 1000,
-  "dry_run_wallet": 10000,
+  "dry_run_wallet": {"USDC": 10000},
   "timeframe": "15m",
   "max_open_trades": 1,
   "stoploss": -0.30,
