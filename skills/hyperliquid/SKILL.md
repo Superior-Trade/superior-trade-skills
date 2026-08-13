@@ -4,7 +4,6 @@ description: "Use when backtesting, deploying, funding, or debugging a live trad
 metadata:
   version: 5.0.0
   updated: 2026-08-12
-  homepage: https://account.superior.trade
   source: https://github.com/Superior-Trade
   primaryEnv: SUPERIOR_TRADE_API_KEY
   auth:
@@ -14,7 +13,7 @@ metadata:
     scope: "Read-write the user's own backtests and deployments. Can start live trading deployments that execute real trades with the user's platform-managed trading wallet, deposit native Arbitrum USDC from that wallet into Hyperliquid, and return Hyperliquid USDC to the user's server-resolved Superior wallet. Cannot export private keys, bypass the Superior wallet for withdrawals, move unsupported assets/chains, or access other users' data."
   env:
     - name: SUPERIOR_TRADE_API_KEY
-      description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade. Can create/manage backtests and deployments including live trading, deposit native Arbitrum USDC from the user's platform-managed wallet into Hyperliquid, and return Hyperliquid USDC to the user's server-resolved Superior wallet. Cannot export private keys, bypass the Superior wallet for withdrawals, move unsupported assets/chains, or access other users' data. Users do not need their own Hyperliquid wallet."
+      description: "Superior Trade API key (x-api-key header). Can create/manage backtests and deployments including live trading, deposit native Arbitrum USDC from the user's platform-managed wallet into Hyperliquid, and return Hyperliquid USDC to the user's server-resolved Superior wallet. Cannot export private keys, bypass the Superior wallet for withdrawals, move unsupported assets/chains, or access other users' data. Users do not need their own Hyperliquid wallet."
       required: true
       type: api_key
   externalEndpoints:
@@ -50,7 +49,7 @@ Environment-specific facts that defy reasonable assumptions. Read these before a
 - **HIP-3 pairs use a HYPHEN, not a colon.** `XYZ-AAPL/USDC:USDC` is correct; `XYZ:AAPL/USDC:USDC` is the single most common format mistake. HIP-3 pairs are also absent from the default `{"type":"meta"}` call — you must pass the dex, e.g. `{"type":"meta","dex":"xyz"}`.
 - **The agent wallet holding $0 is normal.** It signs against the main wallet's balance and never needs funds. Always check the **main** trading wallet's balance; checking the agent wallet's will always look like an empty account.
 - **A balance that covers `stake_amount × max_open_trades` exactly will still fail.** The exchange reserves roughly 1% for fees, so cap `stake_amount` at ~95% of `balance / max_open_trades` or entries get rejected silently.
-- **The account URL is `https://account.superior.trade`.** Never send users to `app.superior.trade`, including when an API error message itself contains that older URL.
+- **Never send users to `app.superior.trade`,** including when an API error message itself contains that URL.
 - **Multi-output TA-Lib functions return tuples.** `talib.BBANDS(...)` and friends crash at runtime if unpacked as a single value — see `references/strategy-config.md`.
 - **Sub-account funds are not available to the master.** A master's true capacity is its own balance plus sub-account balances queried separately via `subAccounts2`; funds sitting in a sub-account cannot back a master deployment.
 - **Accounts run in unified OR legacy mode — never assume.** If perps shows $0 but spot shows funds, ask about unified mode before telling the user to move anything themselves.
@@ -71,7 +70,7 @@ This skill requires exactly **one credential**: an `x-api-key` header value. The
 5. **NEVER** fabricate wallet balances, API responses, or trade results
 6. **NEVER** start a live deployment without explicit user confirmation
 7. **Prefer user-friendly language** over internal technical names when speaking conversationally. Say "strategy", "the bot", or "the trading engine" instead of referencing internal class names or infrastructure details. This is a UX preference — if the user asks about the underlying technology, answer honestly (the platform uses Freqtrade for strategy execution on Hyperliquid).
-8. **NEVER** send users to `app.superior.trade` — the correct URL is `https://account.superior.trade`
+8. **NEVER** send users to `app.superior.trade`
 
 > **Key scope notice:** The API key can create and start live trading deployments that execute real trades using the user's platform-managed trading wallet. It can also initiate native Arbitrum USDC deposits into Hyperliquid and return Hyperliquid USDC to the user's Superior wallet. It cannot export private keys, bypass the Superior wallet for withdrawals, or move unsupported assets/chains. Users should confirm scope with Superior Trade and backtest their strategy first.
 
@@ -108,16 +107,13 @@ Do NOT start a live deployment without an explicit affirmative response.
 
 ### Getting an API Key
 
-> **IMPORTANT:** The correct URL is **https://account.superior.trade** — NOT `app.superior.trade`. Never send users to `app.superior.trade`.
-
 Use `SUPERIOR_TRADE_API_KEY` from the environment or credential manager.
 
 When a user needs to get their API key:
 
-1. Go to https://account.superior.trade
-2. Sign up (email or wallet)
-3. Create or select a trading account wallet from `GET /v3/account`
-4. Fund the platform trading wallet with native USDC on Arbitrum One using the user's own capital
+1. Sign up for or open a Superior Trade account
+2. Create or select a trading account wallet from `GET /v3/account`
+3. Fund the platform trading wallet with native USDC on Arbitrum One using the user's own capital
 5. Create an API key (`st_live_...`) from your account settings
 6. Add it as `SUPERIOR_TRADE_API_KEY` in your agent's environment/credential settings
 7. Bootstrap Hyperliquid setup with `POST /v3/account/{address}/hyperliquid` for the selected trading wallet

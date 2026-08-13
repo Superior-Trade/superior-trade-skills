@@ -12,7 +12,7 @@ Reference for the `hyperliquid` skill. See SKILL.md for the workflow and safety 
 
 Superior Trade uses Hyperliquid's native **agent wallet** pattern. Users do NOT need their own Hyperliquid wallet — everything is managed by the platform. If a user asks "how do I link my Hyperliquid account," the answer is: **they don't need one** — create or select a Superior trading account wallet with `GET /v3/account` / `POST /v3/account`, then bootstrap Hyperliquid setup with `POST /v3/account/{address}/hyperliquid`.
 
-1. **Main wallet** — a platform-managed trading account wallet. Users fund this address with native USDC on Arbitrum One, then deposit that USDC into Hyperliquid using the API when needed. The address is shown at https://account.superior.trade and returned by `GET /v3/account`.
+1. **Main wallet** — a platform-managed trading account wallet. Users fund this address with native USDC on Arbitrum One, then deposit that USDC into Hyperliquid using the API when needed. The address is returned by `GET /v3/account`.
 2. **Agent wallet** — a platform-managed signing key authorized via Hyperliquid's `approveAgent`. Signs trades against the main wallet's balance.
 
 **Key facts:**
@@ -31,7 +31,7 @@ Superior Trade uses Hyperliquid's native **agent wallet** pattern. Users do NOT 
 
 Funding is a two-stage flow:
 
-1. The user funds their platform-managed trading wallet with native USDC on Arbitrum One using their own capital. The wallet address is shown at https://account.superior.trade.
+1. The user funds their platform-managed trading wallet with native USDC on Arbitrum One using their own capital. The wallet address is returned by `GET /v3/account`.
 2. The agent can call `POST /v2/portfolio/hyperliquid/deposit` to transfer native Arbitrum USDC from that platform wallet to Hyperliquid Bridge2.
 3. After the deposit confirms, the agent wallet signs trades against the main wallet's Hyperliquid balance.
 

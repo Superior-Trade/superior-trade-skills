@@ -10,7 +10,7 @@
         "Covers all seven steps in order: credentials, trading account, funding, strategy selection, backtest, deploy, monitor",
         "Says the user does NOT need their own exchange wallet or to connect one",
         "States that a backtest is required before a first live deployment",
-        "Names the account URL as account.superior.trade and never app.superior.trade",
+        "Never sends the user to app.superior.trade",
         "Routes to a venue skill rather than trying to answer venue specifics itself",
         "Does not ask for a private key, seed phrase, or password"
       ]

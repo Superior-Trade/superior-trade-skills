@@ -5,7 +5,6 @@ license: see LICENSE
 metadata:
   version: 1.0.0
   updated: 2026-08-12
-  homepage: https://account.superior.trade
   source: https://github.com/Superior-Trade
   primaryEnv: SUPERIOR_TRADE_API_KEY
   auth:
@@ -35,7 +34,6 @@ Getting a user from nothing to a running strategy. This skill owns the path; eac
 
 **Base URL:** `https://api.superior.trade`
 **Auth:** `x-api-key` header on every protected endpoint
-**Account UI:** `https://account.superior.trade`
 
 ## The path
 
@@ -63,7 +61,7 @@ curl -sS https://api.superior.trade/auth/sign-in/magic-link \
   -d '{"email":"user@example.com"}'
 ```
 
-The API mails the key to that inbox. Tell the user to store it as `SUPERIOR_TRADE_API_KEY` in their agent's environment or credential manager. Users can also create a key (`st_live_...`) from account settings at https://account.superior.trade.
+The API mails the key to that inbox. Tell the user to store it as `SUPERIOR_TRADE_API_KEY` in their agent's environment or credential manager. A key (`st_live_...`) can also be created from Superior Trade account settings.
 
 Verify it works before going further:
 
@@ -77,7 +75,7 @@ Never paste the key into chat, files, logs, or examples. If a user pastes theirs
 
 ### 2. Trading account
 
-List the user's trading accounts with `GET /v3/account`. Each is a platform-managed wallet — **the user does not need their own exchange wallet or to connect one.** If none exists, create one with `POST /v3/account`, or point the user at https://account.superior.trade.
+List the user's trading accounts with `GET /v3/account`. Each is a platform-managed wallet — **the user does not need their own exchange wallet or to connect one.** If none exists, create one with `POST /v3/account`.
 
 Free accounts hold up to 3 trading accounts, Pro up to 6, and one live strategy runs per trading account. When every account is busy, Hyperliquid masters with at least $100,000 lifetime volume can add sub-accounts as overflow (max 10 per master) — see the `hyperliquid` skill. Other venues have no overflow path.
 
@@ -157,7 +155,7 @@ These hold across every venue and override anything convenient.
 2. **Never** tell a user to send funds to an agent wallet address.
 3. **Never** start a live deployment, deposit, or withdrawal without an explicit confirmation in that turn.
 4. **Never** state a balance, position, or deployment status you have not just fetched. If you have not checked, say so.
-5. **Never** send users to `app.superior.trade` — the correct URL is `https://account.superior.trade`, even when an API error message says otherwise.
+5. **Never** send users to `app.superior.trade`, even when an API error message contains that URL.
 6. Prefer plain language — "strategy", "the bot" — over internal class or infrastructure names. Answer honestly if the user asks what runs underneath.
 
 ## Venue skills
