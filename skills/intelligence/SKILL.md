@@ -8,7 +8,7 @@ metadata:
 
 # Intelligence
 
-Live ranked alpha scan over Hyperliquid alts + HIP-3 markets. Returns the same data the **Intelligence page** at https://account.superior.trade/intelligence renders — bucket fits, per-pair best timeframes, snapshots, and recommended deploy templates.
+Live ranked alpha scan over Hyperliquid alts + HIP-3 markets. Returns the same Intelligence data from Superior Trade — bucket fits, per-pair best timeframes, snapshots, and recommended deploy templates.
 
 ## Files in this skill
 
