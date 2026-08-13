@@ -37,6 +37,7 @@ GUARDRAILS='HARD LIMITS for this run, which override anything a skill tells you:
 - Do NOT deposit, withdraw, transfer or exit any funds.
 - Do NOT place any order.
 - Read operations and backtests are fine. Backtests are simulations and cost nothing to create.
+- Lighter funding runs over CCTP and is irreversible. Never create or fund a deposit intent.
 - Clean up anything you create.
 If a step would breach these limits, stop and say what you would have done instead.'
 
@@ -50,8 +51,14 @@ case "$SCENARIO" in
   scan)
     TASK='Using my API key in SUPERIOR_TRADE_API_KEY, tell me what is worth trading right now according to Superior Trade, across everything the platform covers. Then pick one and tell me how you would validate it before risking money.'
     ;;
+  lighter)
+    TASK='Using my API key in SUPERIOR_TRADE_API_KEY, work out whether I can trade on Lighter mainnet right now. Check my real readiness, tell me exactly what is blocking me if anything, and lay out the full funding path in the order I would actually do it. Do not move any money — I want to know the path and my current position on it, not to execute it.'
+    ;;
+  lighter-rh)
+    TASK='Using my API key in SUPERIOR_TRADE_API_KEY, tell me whether I can run a live strategy on Lighter via Robinhood Chain today. Be specific about what works, what does not, and why. If something is unsupported, name the exact error the API returns and what has to change for it to work. Do not start any deployment.'
+    ;;
   *)
-    echo "Unknown scenario: $SCENARIO (expected onboarding|backtest|scan)" >&2
+    echo "Unknown scenario: $SCENARIO (expected onboarding|backtest|scan|lighter|lighter-rh)" >&2
     exit 1
     ;;
 esac
