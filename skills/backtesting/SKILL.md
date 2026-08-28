@@ -8,6 +8,15 @@ metadata:
 
 # Backtesting Best Practices
 
+## API selection
+
+Use the Unified API first: discover support with `GET /runtime/frameworks`,
+then create with `POST /runtime/backtests` and inspect with
+`GET /runtime/backtests/{id}` plus `GET /runtime/backtests/{id}/logs`.
+Read [`../../references/unified-runtime.md`](../../references/unified-runtime.md)
+for the compatibility rule. Use a venue's legacy backtest route only when the
+Unified contract does not support the selected framework or venue.
+
 The mechanics of submitting a backtest are in the `hyperliquid` skill under "Backtest Workflow" (Polymarket backtests are in the `polymarket` skill). This page is about the **judgment calls** — picking a window that means something, telling signal from noise in the result, and knowing when to give up vs. iterate.
 
 ## The trade-count bar (sample size first)

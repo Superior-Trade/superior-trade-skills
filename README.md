@@ -14,6 +14,14 @@ Designed for OpenClaw users adding trading capabilities to their agent, and for 
 
 Everything below is what it routes to.
 
+## Unified API migration
+
+Backtests, deployments, executions, and venue onboarding now use the Unified
+API first. Read [`references/unified-runtime.md`](references/unified-runtime.md)
+for the runtime workflow and the temporary compatibility rule. Legacy `/v2`
+and `/v3` calls remain only when the Unified OpenAPI contract cannot perform
+the selected venue/framework operation.
+
 ## v2 — Hyperliquid and Aerodrome
 
 v2 contains the Freqtrade-based exchange integrations and the existing crypto strategy library.
