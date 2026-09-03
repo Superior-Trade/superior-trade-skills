@@ -1,0 +1,1072 @@
+{
+ "components": {
+  "securitySchemes": {
+   "ApiKeyAuth": {
+    "in": "header",
+    "name": "x-api-key",
+    "type": "apiKey"
+   },
+   "BearerAuth": {
+    "scheme": "bearer",
+    "type": "http"
+   }
+  }
+ },
+ "info": {
+  "description": "Unified account, wallet, market context, runtime, deployment, backtest, execution, and MCP API.",
+  "title": "Superior Trade Unified API",
+  "version": "0.1.0"
+ },
+ "openapi": "3.1.0",
+ "paths": {
+  "/.well-known/mcp.json": {
+   "get": {
+    "operationId": "getMCPDiscovery",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "summary": "MCP discovery manifest"
+   }
+  },
+  "/account": {
+   "get": {
+    "operationId": "getAccount",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Return account identity, plan, limits, and usage"
+   }
+  },
+  "/account/keys": {
+   "get": {
+    "operationId": "listAPIKeys",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List and create API keys"
+   },
+   "post": {
+    "operationId": "createAPIKey",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List and create API keys"
+   }
+  },
+  "/account/keys/{id}": {
+   "delete": {
+    "operationId": "revokeAPIKey",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Revoke an API key"
+   }
+  },
+  "/account/register": {
+   "post": {
+    "operationId": "registerAccount",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "summary": "Request an account verification OTP"
+   }
+  },
+  "/account/usage": {
+   "get": {
+    "operationId": "getAccountUsage",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Return current account usage and limits"
+   }
+  },
+  "/account/verify": {
+   "post": {
+    "operationId": "verifyAccount",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "summary": "Verify an OTP and receive an API key"
+   }
+  },
+  "/context/candles": {
+   "get": {
+    "operationId": "getCandles",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get candle data for a symbol"
+   }
+  },
+  "/context/datasets": {
+   "get": {
+    "operationId": "listDatasets",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List available datasets"
+   }
+  },
+  "/context/funding": {
+   "get": {
+    "operationId": "getFunding",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get funding data for a symbol"
+   }
+  },
+  "/context/leaderboard": {
+   "get": {
+    "operationId": "getLeaderboard",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List strategy leaderboard entries"
+   }
+  },
+  "/context/markets": {
+   "get": {
+    "operationId": "listMarkets",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List supported markets"
+   }
+  },
+  "/context/scan": {
+   "get": {
+    "operationId": "scanSetups",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List market intelligence setups"
+   }
+  },
+  "/context/setup/{symbol}": {
+   "get": {
+    "operationId": "getSetup",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get setup context for a symbol"
+   }
+  },
+  "/context/traders": {
+   "get": {
+    "operationId": "listTraders",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List tracked traders"
+   }
+  },
+  "/context/traders/{wallet}": {
+   "get": {
+    "operationId": "getTrader",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get tracked trader details"
+   }
+  },
+  "/context/venues": {
+   "get": {
+    "operationId": "listVenues",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List supported venues"
+   }
+  },
+  "/health": {
+   "get": {
+    "operationId": "getHealth",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "summary": "Health check"
+   }
+  },
+  "/install.txt": {
+   "get": {
+    "operationId": "getInstallText",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "summary": "Install instructions for MCP clients"
+   }
+  },
+  "/mcp": {
+   "post": {
+    "operationId": "callMCP",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Call the authenticated Streamable HTTP MCP endpoint"
+   }
+  },
+  "/runtime/backtests": {
+   "get": {
+    "operationId": "listBacktests",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List and create backtests"
+   },
+   "post": {
+    "description": "Create Freqtrade backtests with legacy fields or Nautilus backtests that directly create GKE ConfigMap, NautilusBacktestRun, and Job resources from unified-api.",
+    "operationId": "createBacktest",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "additionalProperties": true,
+        "properties": {
+         "datasetRef": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "framework": {
+          "type": "string"
+         },
+         "instruments": {
+          "items": {
+           "type": "string"
+          },
+          "type": "array"
+         },
+         "marketSlugs": {
+          "items": {
+           "type": "string"
+          },
+          "type": "array"
+         },
+         "strategy": {
+          "type": "string"
+         },
+         "strategyConfig": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "strategyId": {
+          "type": "string"
+         },
+         "strategySource": {
+          "type": "string"
+         },
+         "symbol": {
+          "type": "string"
+         },
+         "tenantId": {
+          "type": "string"
+         },
+         "timerange": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "venue": {
+          "type": "string"
+         },
+         "venueProfile": {
+          "enum": [
+           "polymarket-london",
+           "lighter-tokyo",
+           "lighter-robinhood-tokyo"
+          ],
+          "type": "string"
+         }
+        },
+        "type": "object"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "202": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "properties": {
+          "execution_cluster": {
+           "type": "string"
+          },
+          "framework": {
+           "type": "string"
+          },
+          "id": {
+           "type": "string"
+          },
+          "k8s_job_name": {
+           "type": "string"
+          },
+          "namespace": {
+           "type": "string"
+          },
+          "planned_resources": {
+           "items": {
+            "type": "string"
+           },
+           "type": "array"
+          },
+          "result_uri": {
+           "type": "string"
+          },
+          "status": {
+           "type": "string"
+          }
+         },
+         "type": "object"
+        }
+       }
+      },
+      "description": "Backtest accepted"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List and create backtests"
+   }
+  },
+  "/runtime/backtests/dataset": {
+   "get": {
+    "operationId": "getLatestBacktestDataset",
+    "parameters": [
+     {
+      "description": "Venue id: lighter or polymarket.",
+      "in": "query",
+      "name": "venue",
+      "required": true,
+      "schema": {
+       "enum": [
+        "lighter",
+        "polymarket"
+       ],
+       "type": "string"
+      }
+     },
+     {
+      "description": "Exact Lighter instrument id or Polymarket market slug.",
+      "in": "query",
+      "name": "market",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get the latest backtest dataset for an exact market"
+   }
+  },
+  "/runtime/backtests/{id}": {
+   "delete": {
+    "operationId": "deleteBacktest",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get or delete a backtest"
+   },
+   "get": {
+    "operationId": "getBacktest",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get or delete a backtest"
+   }
+  },
+  "/runtime/backtests/{id}/logs": {
+   "get": {
+    "operationId": "getBacktestLogs",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get backtest logs"
+   }
+  },
+  "/runtime/deployments": {
+   "get": {
+    "operationId": "listDeployments",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List deployments"
+   },
+   "post": {
+    "description": "Create a runtime deployment using the public docs payload: framework, venue, region, mode, name, code, config, credentials, alive_until, and on_expiry. Nautilus requests are planned internally and applied as NautilusTenantRuntime custom resources by unified-api.",
+    "operationId": "createDeployment",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "additionalProperties": false,
+        "properties": {
+         "alive_until": {
+          "format": "date-time",
+          "type": "string"
+         },
+         "code": {
+          "description": "Framework-native strategy source.",
+          "type": "string"
+         },
+         "config": {
+          "additionalProperties": true,
+          "description": "Framework-native config.",
+          "type": "object"
+         },
+         "credentials": {
+          "additionalProperties": true,
+          "description": "Credential metadata, normally {\"type\":\"managed\"}.",
+          "type": "object"
+         },
+         "framework": {
+          "enum": [
+           "freqtrade",
+           "nautilus"
+          ],
+          "type": "string"
+         },
+         "image_digest": {
+          "description": "Optional pinned framework image digest.",
+          "type": "string"
+         },
+         "mode": {
+          "enum": [
+           "paper",
+           "live"
+          ],
+          "type": "string"
+         },
+         "name": {
+          "type": "string"
+         },
+         "on_expiry": {
+          "enum": [
+           "stop",
+           "block_entries"
+          ],
+          "type": "string"
+         },
+         "region": {
+          "description": "Optional venue region, for example tokyo.",
+          "type": "string"
+         },
+         "venue": {
+          "description": "Venue id from /context/venues, for example hyperliquid.",
+          "type": "string"
+         }
+        },
+        "required": [
+         "framework",
+         "venue",
+         "mode",
+         "name",
+         "code",
+         "config"
+        ],
+        "type": "object"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "properties": {
+          "created_at": {
+           "type": "string"
+          },
+          "framework": {
+           "type": "string"
+          },
+          "id": {
+           "type": "string"
+          },
+          "mode": {
+           "type": "string"
+          },
+          "status": {
+           "type": "string"
+          },
+          "venue": {
+           "type": "string"
+          }
+         },
+         "type": "object"
+        }
+       }
+      },
+      "description": "Deployment created"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Create a deployment"
+   }
+  },
+  "/runtime/deployments/{id}": {
+   "delete": {
+    "operationId": "deleteDeployment",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get, update, or delete a deployment"
+   },
+   "get": {
+    "operationId": "getDeployment",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get, update, or delete a deployment"
+   },
+   "patch": {
+    "operationId": "updateDeployment",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get, update, or delete a deployment"
+   }
+  },
+  "/runtime/deployments/{id}/credentials": {
+   "put": {
+    "operationId": "setDeploymentCredentials",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Attach deployment credentials"
+   }
+  },
+  "/runtime/deployments/{id}/logs": {
+   "get": {
+    "operationId": "getDeploymentLogs",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get deployment logs"
+   }
+  },
+  "/runtime/deployments/{id}/metrics": {
+   "get": {
+    "operationId": "getDeploymentMetrics",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get deployment metrics"
+   }
+  },
+  "/runtime/deployments/{id}/status": {
+   "put": {
+    "operationId": "setDeploymentStatus",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Start or stop a deployment"
+   }
+  },
+  "/runtime/executions": {
+   "get": {
+    "operationId": "listExecutions",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List and create one-time executions"
+   },
+   "post": {
+    "operationId": "createExecution",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List and create one-time executions"
+   }
+  },
+  "/runtime/executions/{id}": {
+   "get": {
+    "operationId": "getExecution",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get a one-time execution"
+   }
+  },
+  "/runtime/executions/{id}/logs": {
+   "get": {
+    "operationId": "getExecutionLogs",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get one-time execution logs"
+   }
+  },
+  "/runtime/frameworks": {
+   "get": {
+    "operationId": "listRuntimeFrameworks",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "summary": "List supported runtime frameworks"
+   }
+  },
+  "/wallet": {
+   "get": {
+    "operationId": "getWallet",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Return managed wallet address, deposit details, and balance"
+   }
+  },
+  "/wallet/deposits": {
+   "get": {
+    "operationId": "listDeposits",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List wallet deposits"
+   }
+  },
+  "/wallet/withdraw": {
+   "post": {
+    "operationId": "createWithdrawal",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Create a wallet withdrawal"
+   }
+  },
+  "/wallet/withdrawals": {
+   "get": {
+    "operationId": "listWithdrawals",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "List wallet withdrawals"
+   }
+  },
+  "/wallet/withdrawals/{id}": {
+   "get": {
+    "operationId": "getWithdrawal",
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "security": [
+     {
+      "ApiKeyAuth": []
+     },
+     {
+      "BearerAuth": []
+     }
+    ],
+    "summary": "Get a wallet withdrawal"
+   }
+  }
+ },
+ "servers": [
+  {
+   "url": "https://unified-api-zag4gzx6gq-an.a.run.app"
+  }
+ ]
+}

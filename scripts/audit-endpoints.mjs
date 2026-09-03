@@ -3,14 +3,17 @@
 // published contracts.
 //
 //   node scripts/audit-endpoints.mjs             # audit against the snapshots
-//   node scripts/audit-endpoints.mjs --refresh   # re-download the snapshots first
+//   node scripts/audit-endpoints.mjs --refresh   # re-download every snapshot
+//   node scripts/audit-endpoints.mjs --refresh-unified # refresh only Unified
 //
-// Three contracts, in descending authority:
+// Four contracts, in descending authority:
 //
 //   agent-skill.json  GET /v3/agent-skill/openapi.json — a curated surface the
 //                     API team publishes FOR this library. If an endpoint is in
 //                     here, it is sanctioned for agents.
-//   v3.json / v2.json the general specs. Broader, and both are incomplete
+//   unified.json     Unified API surface. This is the primary contract for
+//                    account, wallet, context, runtime, and MCP operations.
+//   v3.json / v2.json the legacy general specs. Broader, and both are incomplete
 //                     relative to the route source, so absence here is a weak
 //                     signal on its own.
 //
@@ -25,19 +28,25 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { extractEndpointClaims } from "./endpoint-claims.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CONTRACT_DIR = join(ROOT, "scripts", "api-contract");
 
 const SOURCES = {
+  unified: process.env.SUPERIOR_UNIFIED_API_OPENAPI_URL ?? "https://unified-api-zag4gzx6gq-an.a.run.app/openapi.json",
   "agent-skill": "https://api.superior.trade/v3/agent-skill/openapi.json",
   v2: "https://api.superior.trade/openapi.json",
   v3: "https://api.superior.trade/v3/openapi.json",
 };
 
-if (process.argv.includes("--refresh")) {
+const refreshAll = process.argv.includes("--refresh");
+const refreshUnified = process.argv.includes("--refresh-unified");
+
+if (refreshAll || refreshUnified) {
   const key = process.env.SUPERIOR_TRADE_API_KEY;
-  for (const [name, url] of Object.entries(SOURCES)) {
+  const sources = refreshAll ? SOURCES : { unified: SOURCES.unified };
+  for (const [name, url] of Object.entries(sources)) {
     const res = await fetch(url, { headers: key ? { "x-api-key": key } : {} });
     if (!res.ok) {
       console.error(`refresh failed for ${name}: HTTP ${res.status}`);
@@ -68,6 +77,7 @@ function load(name) {
 }
 
 const curated = load("agent-skill");
+const unified = load("unified");
 const general = new Set([...load("v2"), ...load("v3")]);
 
 // Verified live on 2026-08-12 with a real key: routed and working, but absent
@@ -106,20 +116,14 @@ function walk(dir) {
 
 const files = [
   ...(existsSync(join(ROOT, "SKILL.md")) ? [join(ROOT, "SKILL.md")] : []),
+  ...(existsSync(join(ROOT, "references")) ? walk(join(ROOT, "references")) : []),
   ...walk(join(ROOT, "skills")),
 ];
-
-const CLAIM =
-  /\b(GET|POST|PUT|PATCH|DELETE)\s+`?((?:https:\/\/api\.superior\.trade)?\/v?[0-9a-zA-Z._\-\/{}$]+)`?/g;
 
 const claims = new Map();
 for (const file of files) {
   const text = readFileSync(file, "utf8");
-  for (const m of text.matchAll(CLAIM)) {
-    let path = m[2].replace("https://api.superior.trade", "").split("?")[0].replace(/[.,)`]+$/, "");
-    if (!path.startsWith("/")) continue;
-    if (!/^\/(v1|v2|v3|health|auth|docs|openapi|llms)/.test(path)) continue;
-    const claim = `${m[1]} ${normalise(path.replace(/\/\$\{[^}]+\}/g, "/{}"))}`;
+  for (const claim of extractEndpointClaims(text).keys()) {
     if (!claims.has(claim)) claims.set(claim, new Set());
     claims.get(claim).add(relative(ROOT, file).replace(/\\/g, "/"));
   }
@@ -130,7 +134,7 @@ const unsanctioned = [];
 
 for (const [claim, where] of [...claims].sort()) {
   if (DOCUMENTED_ABSENT.has(claim)) continue;
-  const known = curated.has(claim) || general.has(claim) || VERIFIED_LIVE.has(claim);
+  const known = unified.has(claim) || curated.has(claim) || general.has(claim) || VERIFIED_LIVE.has(claim);
   if (!known) dead.push({ claim, where: [...where] });
   else if (!curated.has(claim) && /^\w+ \/v3\//.test(claim) && !VERIFIED_LIVE.has(claim)) {
     unsanctioned.push({ claim, where: [...where] });
@@ -148,7 +152,7 @@ for (const claim of claims.keys()) {
 }
 
 console.log(
-  `contracts: agent-skill ${curated.size} routes · general ${general.size} · skill claims ${claims.size}`,
+  `contracts: unified ${unified.size} routes · agent-skill ${curated.size} routes · legacy ${general.size} · skill claims ${claims.size}`,
 );
 
 for (const { claim, sanctioned, where } of methodConflicts) {

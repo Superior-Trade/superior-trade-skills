@@ -18,8 +18,10 @@ metadata:
       required: true
       type: api_key
   externalEndpoints:
+    - url: https://unified-api-zag4gzx6gq-an.a.run.app
+      purpose: "Primary venue/framework discovery and runtime backtest, deployment, and execution operations"
     - url: https://api.superior.trade/v3
-      purpose: "Trading accounts, Polymarket onboarding/funding, immediate market orders, market discovery, filled-data backtesting, deployment planning/status, credential metadata, and logs"
+      purpose: "Temporary legacy fallback for Polymarket account, funding, immediate order, filled-data backtest, and deployment operations"
     - url: https://data-api.polymarket.com
       purpose: "Read-only Polymarket public position lookup by wallet address"
     - url: https://clob.polymarket.com
@@ -30,9 +32,19 @@ metadata:
 
 Trade prediction markets on Polymarket through Superior Trade. Discover markets, place single immediate market orders, write NautilusTrader strategies, backtest against historical trade data, and deploy live — all through one API.
 
-**Base URL:** `https://api.superior.trade/v3`. If the environment configures a different base URL, use that instead.
+## Unified API first
+
+Read [`../../references/unified-runtime.md`](../../references/unified-runtime.md)
+before onboarding, backtesting, deployment, or execution. Use Unified venue
+and framework discovery, then Unified runtime endpoints. The v3 onboarding,
+backtest, and deployment instructions below are temporary compatibility
+fallbacks only when the Unified contract lacks the selected operation.
+
+**Primary runtime base URL:** `${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}`
+**Legacy venue base URL:** `https://api.superior.trade/v3`
 **Auth:** Prefer `x-api-key: <api_key>` for Superior Trade product API keys. Browser/session callers may use `Authorization: Bearer <token>`.
-**Docs:** `GET /v3/docs` (interactive reference), `GET /v3/openapi.json` (OpenAPI spec)
+**Unified contract:** `GET /openapi.json`
+**Legacy docs:** `GET /v3/docs` (interactive reference), `GET /v3/openapi.json` (OpenAPI spec)
 
 ## Reference files
 
@@ -278,4 +290,3 @@ Before `PATCH /v3/deployment/{id}/status` → `{"action":"start"}`:
 7. **User confirmation** — show the deployment summary and get an explicit "yes".
 
 Do NOT skip any step or assume it passed without the API call.
-

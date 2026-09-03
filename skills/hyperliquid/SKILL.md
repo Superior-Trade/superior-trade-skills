@@ -18,8 +18,10 @@ metadata:
       required: true
       type: api_key
   externalEndpoints:
+    - url: https://unified-api-zag4gzx6gq-an.a.run.app
+      purpose: "Primary venue/framework discovery and runtime backtest, deployment, and execution operations"
     - url: https://api.superior.trade
-      purpose: "All backtesting and deployment operations"
+      purpose: "Temporary legacy fallback for Hyperliquid-specific account, funding, backtest, and deployment operations"
     - url: https://api.hyperliquid.xyz/info
       purpose: "Read-only public queries. Balance checks send the user's public wallet address (not a secret — visible on-chain). Pair validation sends no user data. No authentication or secrets are sent to this endpoint."
 ---
@@ -28,9 +30,20 @@ metadata:
 
 Backtest and deploy Freqtrade strategies on Hyperliquid through Superior Trade's managed cloud.
 
-**Base URL:** `https://api.superior.trade`
+**Primary runtime base URL:** `${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}`
+**Legacy venue base URL:** `https://api.superior.trade`
 **Auth:** `x-api-key` header on all protected endpoints
-**Docs:** `GET /docs` (Swagger UI), `GET /openapi.json` (OpenAPI spec), `GET /llms.txt`
+**Unified contract:** `GET /openapi.json`
+**Legacy docs:** `GET /docs` (Swagger UI), `GET /openapi.json` (OpenAPI spec), `GET /llms.txt`
+
+## Unified API first
+
+Before venue setup, backtesting, deployment, or execution, read
+[`../../references/unified-runtime.md`](../../references/unified-runtime.md).
+Use `GET /context/venues` and `GET /runtime/frameworks` to discover support,
+then use the Unified runtime endpoints. The existing `/v2` and `/v3` sections
+are temporary compatibility instructions only when the required Hyperliquid
+operation is absent from the Unified contract.
 
 ## Reference files
 

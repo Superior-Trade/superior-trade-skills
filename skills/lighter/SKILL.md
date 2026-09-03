@@ -18,8 +18,10 @@ metadata:
       required: true
       type: api_key
   externalEndpoints:
+    - url: https://unified-api-zag4gzx6gq-an.a.run.app
+      purpose: "Primary venue/framework discovery and runtime backtest, deployment, and execution operations"
     - url: https://api.superior.trade
-      purpose: "All Lighter account, funding, withdrawal, and deployment operations"
+      purpose: "Temporary legacy fallback for Lighter-specific account, funding, withdrawal, and deployment operations"
     - url: https://mainnet.zklighter.elliot.ai
       purpose: "Read-only public Lighter checks are performed by the Superior Trade API; agents should not send secrets directly to Lighter."
 ---
@@ -28,9 +30,18 @@ metadata:
 
 Use this skill for Lighter account onboarding, Superior-wallet CCTP funding, immediate market orders, signed transaction proxy submission, secure returns to the Superior wallet, and v3 Nautilus deployments on Superior Trade.
 
-**Base URL:** `https://api.superior.trade`
+**Primary runtime base URL:** `${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}`
+**Legacy venue base URL:** `https://api.superior.trade`
 **Auth:** `x-api-key: $SUPERIOR_TRADE_API_KEY`
 **Venue config:** `{ "venue": "lighter", "instrument_id": "<SYMBOL>.LIGHTER" }`
+
+## Unified API first
+
+Read [`../../references/unified-runtime.md`](../../references/unified-runtime.md)
+before onboarding, backtesting, deployment, or execution. Use `GET /context/venues`
+and `GET /runtime/frameworks` first, then the Unified runtime endpoints. The
+v3 onboarding and deployment details remain temporary compatibility fallbacks
+when Unified does not expose the required Lighter operation.
 
 ## Robinhood Chain Variant
 
