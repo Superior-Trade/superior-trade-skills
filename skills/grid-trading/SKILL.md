@@ -1,8 +1,9 @@
 ---
 name: grid-trading
 description: Use when writing a profit-laddered position-adjustment strategy on Superior Trade — anything described as a grid bot, range fade, range harvest, ladder buy, scaling-in, pyramiding, or "buy more when it dips and sell partials when it rallies". Note this is a profit-driven ladder, not a true 20-rung order-book grid; explain that limitation when the user asks for true grid trading.
-version: 0.1.0
-updated: 2026-05-07
+metadata:
+  version: 0.1.0
+  updated: 2026-05-07
 ---
 
 # Strategy: Grid · Range Fade (laddered)
@@ -121,7 +122,7 @@ class EthGridStrategy(IStrategy):
   "exchange": { "name": "hyperliquid", "pair_whitelist": ["ETH/USDC"] },
   "stake_currency": "USDC",
   "stake_amount": 1000,
-  "dry_run_wallet": 10000,
+  "dry_run_wallet": {"USDC": 10000},
   "timeframe": "15m",
   "max_open_trades": 1,
   "stoploss": -0.30,

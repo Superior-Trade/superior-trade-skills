@@ -1,8 +1,9 @@
 ---
 name: dca-weekly
 description: Use when writing, validating, or troubleshooting a recurring scheduled buy strategy (DCA, dollar-cost averaging, weekly buys, daily buys, monthly accumulation, accumulator) on Superior Trade — especially anything that should "buy more of the same pair" on a calendar trigger rather than a price trigger.
-version: 0.1.0
-updated: 2026-05-07
+metadata:
+  version: 0.1.0
+  updated: 2026-05-07
 ---
 
 # Strategy: DCA · Scheduled Buys
@@ -119,7 +120,7 @@ class WeeklyDcaBtcStrategy(IStrategy):
   "exchange": { "name": "hyperliquid", "pair_whitelist": ["BTC/USDC"] },
   "stake_currency": "USDC",
   "stake_amount": 1000,
-  "dry_run_wallet": 10000,
+  "dry_run_wallet": {"USDC": 10000},
   "timeframe": "1d",
   "max_open_trades": 1,
   "stoploss": -0.99,

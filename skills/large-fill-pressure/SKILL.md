@@ -1,8 +1,9 @@
 ---
 name: large-fill-pressure
-description: Use when repeated large fills suggest directional participation or informed flow.
-version: 0.1.0
-updated: 2026-06-17
+description: "Use when repeated large fills on a Polymarket prediction market suggest directional participation or informed flow worth trading behind."
+metadata:
+  version: 0.1.0
+  updated: 2026-06-17
 ---
 
 # Strategy: Polymarket · Large-Fill Pressure

@@ -1,13 +1,23 @@
 ---
 name: backtesting
-description: Use when running, interpreting, or designing backtests on Superior Trade — anything about backtest windows, trade-count thresholds, exit-reason mix, parameter sweeps, walk-forward validation, zero-trade diagnosis, compute-cost estimation, or "is this backtest result trustworthy?". Pair with the relevant strategy template from `strategies/`.
-version: 0.1.0
-updated: 2026-05-07
+description: Use when running, interpreting, or designing backtests on Superior Trade — anything about backtest windows, trade-count thresholds, exit-reason mix, parameter sweeps, walk-forward validation, zero-trade diagnosis, compute-cost estimation, or "is this backtest result trustworthy?". Pair with the relevant strategy skill, such as mean-reversion or breakout.
+metadata:
+  version: 0.1.0
+  updated: 2026-05-07
 ---
 
 # Backtesting Best Practices
 
-The mechanics of submitting a backtest are in the main [SKILL.md](https://github.com/Superior-Trade/superior-skills/blob/main/SKILL.md) under "Backtest Workflow". This page is about the **judgment calls** — picking a window that means something, telling signal from noise in the result, and knowing when to give up vs. iterate.
+## API selection
+
+Use the Unified API first: discover support with `GET /runtime/frameworks`,
+then create with `POST /runtime/backtests` and inspect with
+`GET /runtime/backtests/{id}` plus `GET /runtime/backtests/{id}/logs`.
+Read [`../../references/unified-runtime.md`](../../references/unified-runtime.md)
+for the compatibility rule. Use a venue's legacy backtest route only when the
+Unified contract does not support the selected framework or venue.
+
+The mechanics of submitting a backtest are in the `hyperliquid` skill under "Backtest Workflow" (Polymarket backtests are in the `polymarket` skill). This page is about the **judgment calls** — picking a window that means something, telling signal from noise in the result, and knowing when to give up vs. iterate.
 
 ## The trade-count bar (sample size first)
 

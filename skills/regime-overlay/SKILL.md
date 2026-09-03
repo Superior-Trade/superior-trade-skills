@@ -1,8 +1,9 @@
 ---
 name: regime-overlay
-description: Use when adding a regime filter to any directional strategy on Superior Trade — anything described as regime gate, trend filter, directional confirmation, ADX gate, EMA-separation filter, trade-or-skip overlay. Provides three reusable building blocks (regime_strong_bear, regime_strong_bull, regime_range) that wrap entry signals with triple-confirmation (EMA separation + ADX + N-bar return). Validated as the difference between fragile and robust trend strategies — fewer trades, cleaner equity curve.
-version: 0.1.0
-updated: 2026-05-18
+description: "Use when adding a regime filter to any directional strategy — regime gate, trend filter, directional confirmation, ADX gate, EMA-separation filter, trade-or-skip overlay. Provides three reusable gates (regime_strong_bear, regime_strong_bull, regime_range) that wrap entry signals with triple confirmation."
+metadata:
+  version: 0.1.0
+  updated: 2026-05-18
 ---
 
 # Regime Overlay — Triple-Confirmation Gate

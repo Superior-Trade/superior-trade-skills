@@ -1,8 +1,9 @@
 ---
 name: breakout
 description: Use when writing a swing/intraday breakout strategy on Superior Trade — anything described as breakout, momentum, trend following, 12-hour high, range expansion, riding new highs, Donchian breakout. Note this template was unprofitable in our reference backtest (long-only in a -13% market); explain regime sensitivity to the user.
-version: 0.1.0
-updated: 2026-05-07
+metadata:
+  version: 0.1.0
+  updated: 2026-05-07
 ---
 
 # Strategy: Momentum · Breakout

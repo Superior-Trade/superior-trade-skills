@@ -1,8 +1,9 @@
 ---
 name: mean-reversion
 description: Use when writing a Bollinger-band mean-reversion strategy on Superior Trade — anything described as mean reversion, BB bands, oversold bounce, fade, range trade, ADX low, sigma extension. Upgraded 2026-05-18 from the prior 1h/2.5σ variant to the validated 4h/2σ/ADX<25 version (+8.77% multi-pair, 65.5% win over 162d). Prior 1h variant is preserved at the end of the file as an archived reference.
-version: 0.2.0
-updated: 2026-05-18
+metadata:
+  version: 0.2.0
+  updated: 2026-05-18
 ---
 
 # Mean Reversion — Bollinger Reverter 4h

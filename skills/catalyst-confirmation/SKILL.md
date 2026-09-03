@@ -1,8 +1,9 @@
 ---
 name: catalyst-confirmation
-description: Use when an external event thesis needs market confirmation before commitment.
-version: 0.1.0
-updated: 2026-06-17
+description: "Use when a Polymarket prediction-market thesis rests on an external event — CPI, Fed, elections, court rulings, ETF decisions — and needs market confirmation before committing."
+metadata:
+  version: 0.1.0
+  updated: 2026-06-17
 ---
 
 # Strategy: Polymarket · Catalyst Confirmation

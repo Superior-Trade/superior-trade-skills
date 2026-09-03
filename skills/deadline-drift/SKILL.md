@@ -1,8 +1,9 @@
 ---
 name: deadline-drift
 description: Use when a Polymarket market probability changes as the resolution deadline approaches.
-version: 0.1.0
-updated: 2026-06-17
+metadata:
+  version: 0.1.0
+  updated: 2026-06-17
 ---
 
 # Strategy: Polymarket · Deadline Drift

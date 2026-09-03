@@ -1,13 +1,14 @@
 ---
 name: intelligence
-description: Use when the user asks "what's hot", "what's moving", "any alpha", "show me squeeze setups", "what's the setup on ETH", "is SOL coiled", "should I deploy NEAR" or any market-scan / single-pair-drilldown question. Surfaces Superior Trade's live multi-bucket scoring across Hyperliquid alts + HIP-3 (stocks/indices/commodities/FX) — Squeeze fuel, Stealth accumulation, Coiled spring, Basis flipping. The engine picks the strongest timeframe (15m/1h/4h/24h) per pair per bucket; you don't pick one. Pairs in to the existing strategy → backtest → deployment workflow at api.superior.trade.
-version: 0.1.0
-updated: 2026-05-09
+description: "Use when the user asks what's hot, what's moving, if there's any alpha, \"show me squeeze setups\", \"what's the setup on ETH\", \"is SOL coiled\", \"should I deploy NEAR\", or any market-scan or pair-drilldown question. Surfaces live scoring for squeeze fuel, stealth accumulation, coiled spring and basis flipping across Hyperliquid alts and HIP-3, choosing the strongest timeframe per pair."
+metadata:
+  version: 0.1.0
+  updated: 2026-05-09
 ---
 
 # Intelligence
 
-Live ranked alpha scan over Hyperliquid alts + HIP-3 markets. Returns the same data the **Intelligence page** at https://account.superior.trade/intelligence renders — bucket fits, per-pair best timeframes, snapshots, and recommended deploy templates.
+Live ranked alpha scan over Hyperliquid alts + HIP-3 markets. Returns the same Intelligence data from Superior Trade — bucket fits, per-pair best timeframes, snapshots, and recommended deploy templates.
 
 ## Files in this skill
 
@@ -20,7 +21,8 @@ Live ranked alpha scan over Hyperliquid alts + HIP-3 markets. Returns the same d
 
 ## When to call which endpoint
 
-- **List question** ("what's hot", "any squeeze setups", "show me coiled springs in HIP-3") → `GET /v2/intelligence/scan` with optional `bucket` and `category` filters.
+- **List question** ("what's hot", "any squeeze setups", "show me coiled springs in HIP-3") → `GET /v2/intelligence/scan`.
+  **Pass `category=both` for any open-ended question.** The parameter defaults to `alts`, so a bare call silently returns crypto perps only and never surfaces a single HIP-3 stock, index or commodity — even though this skill advertises them. Narrow to `alts` or `tradfi` only when the user asked for one. Add `bucket` when they named a specific setup.
 - **Single-pair question** ("tell me about ETH", "is NEAR a stealth setup", "should I deploy AVAX") → `GET /v2/intelligence/setup/{pair}`. Always do this BEFORE backtesting / deploying so the choice is grounded in current data.
 
 ## Critical: do not improvise rankings

@@ -1,8 +1,9 @@
 ---
 name: scalping
 description: Use when writing a high-turnover intraday strategy on Superior Trade — anything described as scalping, momentum bursts, fast in/out, RSI thrust, volume spike entry, 5-minute strategy. Note this template was unprofitable in our reference backtest (33% WR, -0.34%); use it as a structural template, not a recommendation.
-version: 0.1.0
-updated: 2026-05-07
+metadata:
+  version: 0.1.0
+  updated: 2026-05-07
 ---
 
 # Strategy: Scalp · Momentum Bursts

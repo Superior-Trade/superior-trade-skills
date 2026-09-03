@@ -1,8 +1,9 @@
 ---
 name: related-market-spread
 description: Use when two Polymarket markets imply different probabilities for a linked outcome.
-version: 0.1.0
-updated: 2026-06-17
+metadata:
+  version: 0.1.0
+  updated: 2026-06-17
 ---
 
 # Strategy: Polymarket · Related-Market Spread

@@ -1,8 +1,9 @@
 ---
 name: fees-optimizations
-description: Use when the user asks about fees, slippage, maker vs taker, post-only orders, fee tiers, fee optimization, why my strategy is losing more than backtest, builder code fee, effective spread, order pricing, or wants to lower trading costs on a Hyperliquid Freqtrade deployment. Also use proactively when the user designs a high-turnover strategy (5m or faster, tight ROI < 0.5%) — fees often dominate edge there.
-version: 0.1.0
-updated: 2026-05-07
+description: "Use when the user asks about fees, fee optimization, slippage, maker vs taker, post-only or ALO orders, fee tiers, builder code fees, effective spread, order pricing, lowering trading costs, or why a live Hyperliquid Freqtrade strategy underperforms its backtest. Also use proactively for high-turnover designs (5m or faster, ROI under 0.5%), where fees usually decide the outcome."
+metadata:
+  version: 0.1.0
+  updated: 2026-05-07
 ---
 
 # Freqtrade × Hyperliquid: Fee Optimization

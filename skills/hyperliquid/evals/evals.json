@@ -1,0 +1,66 @@
+{
+  "skill": "hyperliquid",
+  "notes": "These cases exist to prove two things the refactor depends on: that the gotchas in SKILL.md fire before the agent makes the mistake, and that detail moved into references/ is still reached when the task needs it. Run in a fresh session with no prior context.",
+  "cases": [
+    {
+      "id": "hip3-pair-format",
+      "prompt": "Set up a strategy that trades tokenized Amazon stock perps on Superior Trade. What exact pair string do I use?",
+      "should_trigger": true,
+      "assertions": [
+        "Produces XYZ-AMZN/USDC:USDC with a hyphen between protocol and ticker",
+        "Never produces the colon form XYZ:AMZN/USDC:USDC",
+        "States that HIP-3 pairs are absent from the default meta call and require {\"type\":\"meta\",\"dex\":\"xyz\"}",
+        "Sets trading_mode futures and margin_mode isolated"
+      ]
+    },
+    {
+      "id": "hip3-stake-sizing-from-reference",
+      "prompt": "I have 500 USDC and want to run 4 concurrent positions on XYZ-AAPL/USDC:USDC. What stake_amount should I set?",
+      "should_trigger": true,
+      "assertions": [
+        "Uses the HIP-3 figure of roughly 70% of balance/max_open_trades, not the standard 90-95%",
+        "Explains that fees and isolated-margin buffers are higher on HIP-3",
+        "Evidence that references/wallets-and-accounts.md was loaded rather than guessed at"
+      ]
+    },
+    {
+      "id": "agent-wallet-zero-balance",
+      "prompt": "My deployment says the wallet has $0 but I definitely deposited. What's broken?",
+      "should_trigger": true,
+      "assertions": [
+        "Identifies that the agent wallet holding $0 is normal and expected",
+        "Directs the balance check at the main trading wallet instead",
+        "Does not tell the user to send funds to the agent wallet"
+      ]
+    },
+    {
+      "id": "talib-multi-output",
+      "prompt": "Write me a Freqtrade strategy for Superior Trade that enters when price closes below the lower Bollinger band.",
+      "should_trigger": true,
+      "assertions": [
+        "Unpacks talib.BBANDS into three separate outputs rather than assigning a single value",
+        "Loads references/strategy-config.md for the code template"
+      ]
+    },
+    {
+      "id": "wallet-busy",
+      "prompt": "I want to run a second strategy at the same time as my current one. How?",
+      "should_trigger": true,
+      "assertions": [
+        "Explains one live strategy per trading account",
+        "Says to omit wallet_address so the server assigns the next idle trading account",
+        "Mentions the account-count ceiling (Free 3, Pro 6) or sub-accounts as overflow"
+      ]
+    },
+    {
+      "id": "completed-backtest-has-no-resultUrl",
+      "prompt": "My backtest says status completed but resultUrl is null and results is null. Did it fail?",
+      "should_trigger": true,
+      "assertions": [
+        "States that null results/resultUrl on a completed run is normal, not a failure",
+        "Directs the agent to GET /v2/backtesting/{id}/logs for the Freqtrade summary",
+        "Does not tell the user to re-run the backtest or wait longer"
+      ]
+    }
+  ]
+}

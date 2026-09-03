@@ -1,8 +1,9 @@
 ---
 name: donchian-strong-regime
-description: Use when writing a trend-breakdown short gated by a triple-confirmed strong-bear regime on Superior Trade — anything described as donchian short, structural breakdown, regime-gated trend follower, EMA-separation + ADX + N-bar return confirmation. Validated +6.69%/100% win/0% DD on BTC over 162d; designed to fire only in confirmed bear regimes (zero trades in chop by design). Pairs with bollinger-reverter-4h for full-regime coverage.
-version: 0.1.0
-updated: 2026-05-18
+description: "Use when writing a trend-breakdown short gated by a triple-confirmed strong-bear regime — donchian short, structural breakdown, regime-gated trend follower, EMA-separation plus ADX plus N-bar return confirmation. Validated on BTC; fires only in confirmed bear regimes and takes zero trades in chop by design. Pairs with bollinger-reverter-4h."
+metadata:
+  version: 0.1.0
+  updated: 2026-05-18
 ---
 
 # Donchian Strong-Regime Short

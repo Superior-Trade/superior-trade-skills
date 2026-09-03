@@ -1,8 +1,9 @@
 ---
 name: probability-mean-reversion
 description: Use when a Polymarket outcome appears to overreact and then stall away from recent filled-price range.
-version: 0.1.0
-updated: 2026-06-17
+metadata:
+  version: 0.1.0
+  updated: 2026-06-17
 ---
 
 # Strategy: Polymarket · Probability Mean Reversion

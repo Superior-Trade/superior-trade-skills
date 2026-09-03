@@ -1,8 +1,7 @@
 ---
 name: superior-trade-auth
-description: Request and use a Superior Trade API key for https://api.superior.trade. Use when an agent needs to onboard a user by email, request an API key with POST /auth/sign-in/magic-link, set up x-api-key authentication, or recover from missing/invalid Superior Trade credentials (401/403) before backtesting or deploying a strategy.
+description: Use when an agent needs to onboard a Superior Trade user by email, register or verify an OTP, set up x-api-key authentication, or recover from missing or invalid Superior Trade credentials (401/403) before backtesting or deploying a strategy.
 license: see LICENSE
-version: "1.0.0"
 metadata:
   openclaw:
     requires:
@@ -13,26 +12,40 @@ metadata:
       - name: SUPERIOR_TRADE_API_KEY
         required: true
         description: Superior Trade API key, sent as the x-api-key header.
+  version: "1.0.0"
 ---
 
 # Superior Trade Authentication
 
-Use this skill to get a Superior Trade API key and make authenticated requests to `https://api.superior.trade`.
+Use this skill to get a Superior Trade API key and make authenticated requests.
+For account, wallet, context, runtime, and MCP workflows, prefer the Unified
+API described in [`references/unified-runtime.md`](references/unified-runtime.md).
 
 ## API Key Onboarding
 
 If a user does not already have a Superior Trade API key, ask for the email address that should receive the key. Do not ask for wallet keys, seed phrases, private keys, passwords, or other secrets.
 
-Request the key with:
+Request a verification OTP from the Unified API:
 
 ```bash
-curl -sS https://api.superior.trade/auth/sign-in/magic-link \
+curl -sS "${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}/account/register" \
   -X POST \
   -H 'Content-Type: application/json' \
   -d '{"email":"user@example.com"}'
 ```
 
-The API sends the key directly to the user's inbox. Tell the user to retrieve the key from their email and configure it in their normal credential store or environment, usually as `SUPERIOR_TRADE_API_KEY`.
+Ask the user for the verification OTP sent to that inbox, then exchange it for
+an API key with `POST /account/verify`. Tell the user to configure the received
+key in their normal credential store or environment, usually as
+`SUPERIOR_TRADE_API_KEY`. Use the legacy magic-link endpoint only when the
+Unified registration flow is unavailable, and state that fallback explicitly.
+
+```bash
+curl -sS "${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}/account/verify" \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"user@example.com","otp":"123456"}'
+```
 
 Do not paste the received key into chat, source files, logs, or examples. If the user provides a key in chat, treat it as a secret and avoid repeating it.
 
@@ -41,7 +54,7 @@ Do not paste the received key into chat, source files, logs, or examples. If the
 Use the key in the `x-api-key` header:
 
 ```bash
-curl -sS https://api.superior.trade/v2/account \
+curl -sS "${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}/account" \
   -H "x-api-key: $SUPERIOR_TRADE_API_KEY"
 ```
 
@@ -50,13 +63,29 @@ The email is verified once the API key is used successfully in an authenticated 
 ## Operating Rules
 
 - Prefer `SUPERIOR_TRADE_API_KEY` from the environment or credential manager when it is available.
-- Use `https://api.superior.trade` as the production API base URL.
+- Use the Unified API for account, wallet, context, runtime, and MCP operations.
+- Use `https://api.superior.trade` only for a documented temporary legacy fallback.
 - Use `Content-Type: application/json` for JSON request bodies.
 - Never fabricate authentication status. Verify by making a real API call when credentials are available.
 - Never request or handle private keys, seed phrases, or wallet credentials.
 - Never start live trading, deposits, or other fund-moving actions without the explicit confirmations required by the relevant Superior Trade trading skill.
 
-## Related Skills
+## Next: the rest of the library
 
-- Use the `superior-trade-hyperliquid` skill for Hyperliquid, Aerodrome, Binance strategy backtests, deployments, wallets, funding, and live trading workflows.
-- Use the `polymarket` skill for Polymarket market discovery, backtests, deployments, and funding workflows.
+This page covers authentication only. Everything past the API key — funding, strategy selection, backtesting, deployment — lives in the installable skill library.
+
+Install it:
+
+```bash
+npx skills add Superior-Trade/superior-skills
+```
+
+Then load `skills/superior-trade`, which owns the full path from an empty account to a running strategy and hands off to the venue skills.
+
+- `skills/superior-trade` — start here; the access → funding → backtest → deploy path
+- `skills/hyperliquid` — Hyperliquid perps and spot, including HIP-3 stocks and commodities
+- `skills/polymarket` — Polymarket discovery, backtests, and deployments
+- `skills/lighter` — Lighter bootstrap, CCTP deposits, returns, and Nautilus deployments
+- `skills/aerodrome` — Aerodrome/Base spot-AMM workflows
+- `skills/deposit-qr` — QR code or payment URI to fund a Superior-managed wallet
+- `skills/external-deposit` — external bridge links, Relay quotes, MetaMask Mobile QR

@@ -1,8 +1,9 @@
 ---
 name: dsl-exit-engine
-description: Use when designing or tuning exit logic for a Freqtrade strategy on Superior Trade — anything described as ratcheting trailing stop, two-phase exit, ALO-aware exit, dynamic stoploss DSL, ROI ladder, take-profit ladder, exit engine. Specifies a three-phase exit (Phase 0 ROI ladder, Phase 1 hard stop, Phase 2 ratcheting trail) that strategies compose. The Phase 2 ratchet was the most consistently profitable primitive across 21 validation backtests; the Phase 0 ladder is what makes mean-reversion strategies actually book wins.
-version: 0.1.0
-updated: 2026-05-18
+description: "Use when designing or tuning exit logic for a Freqtrade strategy — ratcheting trailing stop, two-phase exit, ALO-aware exit, dynamic stoploss DSL, ROI ladder, take-profit ladder, exit engine. Defines a three-phase exit that strategies compose: Phase 0 ROI ladder, Phase 1 hard stop, Phase 2 ratcheting trail."
+metadata:
+  version: 0.1.0
+  updated: 2026-05-18
 ---
 
 # DSL Exit Engine — Three-Phase Exit Primitive

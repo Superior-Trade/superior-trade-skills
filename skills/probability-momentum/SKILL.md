@@ -1,8 +1,9 @@
 ---
 name: probability-momentum
 description: Use when a Polymarket outcome price and filled volume are accelerating in the same direction.
-version: 0.1.0
-updated: 2026-06-17
+metadata:
+  version: 0.1.0
+  updated: 2026-06-17
 ---
 
 # Strategy: Polymarket · Probability Momentum

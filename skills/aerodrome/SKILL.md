@@ -1,7 +1,8 @@
 ---
 name: aerodrome
 description: Use when creating, validating, backtesting, deploying, sizing, or troubleshooting Aerodrome/Base spot trading strategies through the Superior Trade API, especially Freqtrade configs using exchange.name "aerodrome", AERO/USDC or CHECK/USDC pairs, AMM market swaps, wallet/gas balance checks, no-orderbook pricing, or Aerodrome live deployment safety.
-version: "0.1.0"
+metadata:
+  version: "0.1.0"
 ---
 
 # Aerodrome Trading
@@ -126,52 +127,6 @@ Notes:
 - Do not include `dry_run`, `initial_state`, `api_server`, `walletAddress`, `privateKey`, `wallet_address`, or `private_key`.
 - `ccxt_async_config` is usually unnecessary for Aerodrome authoring unless current API tests show otherwise.
 
-## Strategy Template
-
-```python
-from freqtrade.strategy import IStrategy
-import pandas as pd
-import talib.abstract as ta
-
-
-class AerodromeRsiStrategy(IStrategy):
-    timeframe = "5m"
-    process_only_new_candles = True
-    startup_candle_count = 50
-    minimal_roi = {"0": 0.05}
-    stoploss = -0.10
-    can_short = False
-
-    def populate_indicators(self, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
-        dataframe["ema_50"] = ta.EMA(dataframe, timeperiod=50)
-        return dataframe
-
-    def populate_entry_trend(self, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:
-        dataframe.loc[
-            (dataframe["volume"] > 0)
-            & (dataframe["rsi"] < 35)
-            & (dataframe["close"] > dataframe["ema_50"]),
-            "enter_long",
-        ] = 1
-        return dataframe
-
-    def populate_exit_trend(self, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:
-        dataframe.loc[
-            (dataframe["rsi"] > 65),
-            "exit_long",
-        ] = 1
-        return dataframe
-```
-
-Rules for generated strategy code:
-
-- Implement `populate_indicators`, `populate_entry_trend`, and `populate_exit_trend`.
-- Use `enter_long` and `exit_long` only. Do not use `enter_short`.
-- Do not do custom network calls from strategy hot paths.
-- Do not rely on bid/ask spread, order-book imbalance, depth, or maker/taker limit placement.
-- If using multi-output TA-Lib functions such as `BBANDS`, `MACD`, or `STOCH`, assign their returned columns explicitly.
-
 ## Backtest Workflow
 
 1. Build Aerodrome config and Freqtrade strategy code.
@@ -183,156 +138,6 @@ Rules for generated strategy code:
 7. Present total trades, win rate, profit, drawdown, and whether results justify live testing.
 
 Do not offer live deployment after a zero-trade backtest unless the user explicitly wants to debug live behavior.
-
-### Aerodrome API Quick Reference
-
-Use `SUPERIOR_TRADE_API_KEY` from the environment. Do not paste API keys into commands, files, or logs.
-
-Check data availability:
-
-```bash
-curl -sS --get "https://api.superior.trade/v2/backtesting-data/aerodrome" \
-  --data-urlencode "pair=AERO/USDC" \
-  --data-urlencode "timeframe=5m"
-```
-
-Expected success shape:
-
-```json
-{
-  "available": true,
-  "pair": "AERO/USDC",
-  "timeframe": "5m",
-  "from": "ISO8601 when cataloged",
-  "to": "ISO8601 when cataloged",
-  "candles": 1234
-}
-```
-
-If `available` is false or the response says data will be fetched live from Bitquery, it is still acceptable to create the backtest unless the user requested only pre-downloaded data.
-
-Create the backtest:
-
-```bash
-curl -sS -X POST "https://api.superior.trade/v2/backtesting" \
-  -H "content-type: application/json" \
-  -H "x-api-key: ${SUPERIOR_TRADE_API_KEY}" \
-  --data @aero-backtest.json
-```
-
-Create response:
-
-```json
-{
-  "id": "string",
-  "status": "pending",
-  "message": "Backtest created. Call PUT /:id/status with action \"start\" to begin."
-}
-```
-
-Start the backtest:
-
-```bash
-curl -sS -X PUT "https://api.superior.trade/v2/backtesting/${BACKTEST_ID}/status" \
-  -H "content-type: application/json" \
-  -H "x-api-key: ${SUPERIOR_TRADE_API_KEY}" \
-  --data '{"action":"start"}'
-```
-
-Poll status every 10 seconds until `completed` or `failed`:
-
-```bash
-curl -sS "https://api.superior.trade/v2/backtesting/${BACKTEST_ID}/status" \
-  -H "x-api-key: ${SUPERIOR_TRADE_API_KEY}"
-```
-
-Fetch full details after completion:
-
-```bash
-curl -sS "https://api.superior.trade/v2/backtesting/${BACKTEST_ID}" \
-  -H "x-api-key: ${SUPERIOR_TRADE_API_KEY}"
-```
-
-If failed, fetch logs:
-
-```bash
-curl -sS "https://api.superior.trade/v2/backtesting/${BACKTEST_ID}/logs?pageSize=100" \
-  -H "x-api-key: ${SUPERIOR_TRADE_API_KEY}"
-```
-
-Cancel or delete a backtest:
-
-```bash
-curl -sS -X DELETE "https://api.superior.trade/v2/backtesting/${BACKTEST_ID}" \
-  -H "x-api-key: ${SUPERIOR_TRADE_API_KEY}"
-```
-
-Status responses may include parsed `results`. Full details may include a signed `resultUrl`; download it for full Freqtrade metrics when present. Present at least total trades, win rate, total profit, max drawdown, and Sharpe ratio. If a backtest fails, summarize the relevant log lines and the likely fix.
-
-### AERO/USDC Backtest Payload
-
-Use this as the default `aero-backtest.json` for a simple AERO strategy unless the user requested different risk, timeframe, timerange, or indicators.
-
-```json
-{
-  "config": {
-    "exchange": {
-      "name": "aerodrome",
-      "pair_whitelist": ["AERO/USDC"],
-      "ccxt_config": {
-        "options": {
-          "rpcUrl": "https://mainnet.base.org",
-          "markets": [
-            {
-              "symbol": "AERO/USDC",
-              "baseAddress": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
-              "baseDecimals": 18,
-              "quoteAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-              "quoteDecimals": 6,
-              "poolAddress": "0x6cdcb1c4a4d1c3c6d054b27ac5b77e89eafb971d",
-              "stable": false
-            },
-            {
-              "symbol": "CHECK/USDC",
-              "baseAddress": "0x9126236476eFBA9Ad8aB77855c60eB5BF37586Eb",
-              "baseDecimals": 18,
-              "quoteAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-              "quoteDecimals": 6,
-              "poolAddress": "0x6a4BeFa1337865071E27c62dc9d7E3bCa253cE0f",
-              "stable": false
-            }
-          ]
-        }
-      }
-    },
-    "stake_currency": "USDC",
-    "stake_amount": 10,
-    "max_open_trades": 1,
-    "timeframe": "5m",
-    "stoploss": -0.1,
-    "minimal_roi": { "0": 0.05 },
-    "order_types": {
-      "entry": "market",
-      "exit": "market",
-      "force_entry": "market",
-      "force_exit": "market",
-      "emergency_exit": "market",
-      "stoploss": "market",
-      "stoploss_on_exchange": false
-    },
-    "entry_pricing": { "price_side": "other", "use_order_book": false },
-    "exit_pricing": { "price_side": "other", "use_order_book": false },
-    "pairlists": [{ "method": "StaticPairList" }]
-  },
-  "code": "from freqtrade.strategy import IStrategy\nimport pandas as pd\nimport talib.abstract as ta\n\n\nclass AeroRsiEmaStrategy(IStrategy):\n    timeframe = \"5m\"\n    process_only_new_candles = True\n    startup_candle_count = 50\n    minimal_roi = {\"0\": 0.05}\n    stoploss = -0.10\n    can_short = False\n\n    def populate_indicators(self, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:\n        dataframe[\"rsi\"] = ta.RSI(dataframe, timeperiod=14)\n        dataframe[\"ema_50\"] = ta.EMA(dataframe, timeperiod=50)\n        return dataframe\n\n    def populate_entry_trend(self, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:\n        dataframe.loc[\n            (dataframe[\"volume\"] > 0)\n            & (dataframe[\"rsi\"] < 35)\n            & (dataframe[\"close\"] > dataframe[\"ema_50\"]),\n            \"enter_long\",\n        ] = 1\n        return dataframe\n\n    def populate_exit_trend(self, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:\n        dataframe.loc[\n            (dataframe[\"rsi\"] > 65),\n            \"exit_long\",\n        ] = 1\n        return dataframe\n",
-  "timerange": {
-    "start": "2026-03-01",
-    "end": "2026-04-01"
-  }
-}
-```
-
-Before submitting a modified payload, re-check it against the non-negotiables: spot-only, no `:USDC` pair suffix, no private keys, no orderbook pricing, market order types, numeric stake amount, and supported Aerodrome market metadata.
 
 ## Live Deployment Workflow
 
@@ -373,11 +178,13 @@ Deployment Summary:
 This will trade with real funds. Proceed? (yes/no)
 ```
 
-## Troubleshooting
 
-- Validation says Aerodrome only supports spot: remove `trading_mode: "futures"`, `trading_mode: "margin"`, and `margin_mode`.
-- Validation says stake currency is not present in markets: align `stake_currency` with the quote or base token in `exchange.ccxt_config.options.markets`.
-- Orderbook errors: remove `use_order_book`, `order_book_top`, depth checks, and strategy calls to `self.dp.orderbook()`.
-- Zero trades: check wallet token balance, ETH gas, numeric `stake_amount`, data availability, and overly restrictive entry conditions.
-- Market buy requires price: keep Freqtrade market order config and avoid hand-calling CCXT without price; Aerodrome market buys need price context for cost calculation.
-- Aerodrome swaps are atomic, so stopping the bot does not need a position-close cleanup routine.
+## Reference files
+
+Load on demand.
+
+| Read | When |
+| --- | --- |
+| `references/api.md` | You need endpoint shapes or a complete AERO/USDC backtest payload. |
+| `references/strategy-template.md` | You are writing or adapting the strategy code. |
+| `references/troubleshooting.md` | A swap failed, gas is short, or a deployment trades zero times. |
