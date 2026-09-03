@@ -14,7 +14,7 @@ Use this for before-date contracts, monthly/weekly threshold markets, election t
 
 ## What the agent should look for
 
-- Exact market slug from `POST /v3/markets/search`.
+- Canonical Polymarket market from `GET /context/markets?venue=polymarket`.
 - Reliable `market_end` from market metadata.
 - Time remaining during the candidate backtest window.
 - Probability drift near deadline in the filled history.

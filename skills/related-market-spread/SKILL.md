@@ -14,7 +14,7 @@ Use this when the user asks for relative-value trades, discrepancy checks, linke
 
 ## What the agent should look for
 
-- At least two exact market slugs from `POST /v3/markets/search`.
+- At least two canonical Polymarket markets from `GET /context/markets?venue=polymarket`.
 - Resolution logic that is genuinely comparable across the two markets.
 - Spread between filled-trade prices that is wide versus historical behavior.
 - Enough historical filled data on both markets for the requested backtest window.

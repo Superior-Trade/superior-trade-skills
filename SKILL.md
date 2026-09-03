@@ -1,6 +1,6 @@
 ---
 name: superior-trade-auth
-description: Use when an agent needs to onboard a Superior Trade user by email, register or verify an OTP, set up x-api-key authentication, or recover from missing or invalid Superior Trade credentials (401/403) before backtesting or deploying a strategy.
+description: Use when an agent needs to register a Superior Trade account, verify an email OTP, configure x-api-key authentication, or recover from missing or invalid credentials before using the Unified API.
 license: see LICENSE
 metadata:
   openclaw:
@@ -17,35 +17,31 @@ metadata:
 
 # Superior Trade Authentication
 
-Use this skill to get a Superior Trade API key and make authenticated requests.
-For account, wallet, context, runtime, and MCP workflows, prefer the Unified
-API described in [`references/unified-runtime.md`](references/unified-runtime.md).
+Use this skill to get a Superior Trade API key and make authenticated requests to `https://unified-api-zag4gzx6gq-an.a.run.app`.
 
 ## API Key Onboarding
 
 If a user does not already have a Superior Trade API key, ask for the email address that should receive the key. Do not ask for wallet keys, seed phrases, private keys, passwords, or other secrets.
 
-Request a verification OTP from the Unified API:
+Request a verification OTP with:
 
 ```bash
-curl -sS "${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}/account/register" \
+curl -sS https://unified-api-zag4gzx6gq-an.a.run.app/account/register \
   -X POST \
   -H 'Content-Type: application/json' \
   -d '{"email":"user@example.com"}'
 ```
 
-Ask the user for the verification OTP sent to that inbox, then exchange it for
-an API key with `POST /account/verify`. Tell the user to configure the received
-key in their normal credential store or environment, usually as
-`SUPERIOR_TRADE_API_KEY`. Use the legacy magic-link endpoint only when the
-Unified registration flow is unavailable, and state that fallback explicitly.
+Ask the user for the OTP sent to that inbox, then exchange it for an API key:
 
 ```bash
-curl -sS "${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}/account/verify" \
+curl -sS https://unified-api-zag4gzx6gq-an.a.run.app/account/verify \
   -X POST \
   -H 'Content-Type: application/json' \
   -d '{"email":"user@example.com","otp":"123456"}'
 ```
+
+Tell the user to configure the returned key in their normal credential store or environment, usually as `SUPERIOR_TRADE_API_KEY`.
 
 Do not paste the received key into chat, source files, logs, or examples. If the user provides a key in chat, treat it as a secret and avoid repeating it.
 
@@ -54,7 +50,7 @@ Do not paste the received key into chat, source files, logs, or examples. If the
 Use the key in the `x-api-key` header:
 
 ```bash
-curl -sS "${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}/account" \
+curl -sS https://unified-api-zag4gzx6gq-an.a.run.app/account \
   -H "x-api-key: $SUPERIOR_TRADE_API_KEY"
 ```
 
@@ -63,8 +59,8 @@ The email is verified once the API key is used successfully in an authenticated 
 ## Operating Rules
 
 - Prefer `SUPERIOR_TRADE_API_KEY` from the environment or credential manager when it is available.
-- Use the Unified API for account, wallet, context, runtime, and MCP operations.
-- Use `https://api.superior.trade` only for a documented temporary legacy fallback.
+- Use `https://unified-api-zag4gzx6gq-an.a.run.app` as the production API base URL.
+- Use only the unversioned Unified API contract from `GET /openapi.json`.
 - Use `Content-Type: application/json` for JSON request bodies.
 - Never fabricate authentication status. Verify by making a real API call when credentials are available.
 - Never request or handle private keys, seed phrases, or wallet credentials.
@@ -85,7 +81,7 @@ Then load `skills/superior-trade`, which owns the full path from an empty accoun
 - `skills/superior-trade` — start here; the access → funding → backtest → deploy path
 - `skills/hyperliquid` — Hyperliquid perps and spot, including HIP-3 stocks and commodities
 - `skills/polymarket` — Polymarket discovery, backtests, and deployments
-- `skills/lighter` — Lighter bootstrap, CCTP deposits, returns, and Nautilus deployments
+- `skills/lighter` — Lighter market context, wallet checks, backtests, and contract-supported Nautilus deployments
 - `skills/aerodrome` — Aerodrome/Base spot-AMM workflows
 - `skills/deposit-qr` — QR code or payment URI to fund a Superior-managed wallet
 - `skills/external-deposit` — external bridge links, Relay quotes, MetaMask Mobile QR

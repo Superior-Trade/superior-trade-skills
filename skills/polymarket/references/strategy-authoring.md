@@ -174,4 +174,3 @@ For multi-outcome markets (e.g. Fed rate: hold / 25bp cut / 50bp cut), pass all 
 - `self.cache.positions(instrument_id=id)` — open positions for an instrument
 - `self.clock.utc_now()` — current UTC timestamp
 - `self.portfolio` — account balances and positions
-

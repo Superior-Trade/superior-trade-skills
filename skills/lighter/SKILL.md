@@ -1,6 +1,6 @@
 ---
 name: lighter
-description: "Use when onboarding, funding, trading, or withdrawing on Lighter through Superior Trade — account bootstrap, CCTP deposits from a Superior wallet, immediate orders, withdrawals, proxying signed Lighter transactions, or deploying and monitoring a Lighter Nautilus strategy."
+description: "Use when researching, backtesting, deploying, or running a supported one-time Lighter action through the Superior Trade Unified API."
 metadata:
   version: 1.0.2
   updated: 2026-07-22
@@ -11,85 +11,69 @@ metadata:
     type: api_key
     env: SUPERIOR_TRADE_API_KEY
     header: x-api-key
-    scope: "Read-write the user's own Lighter account readiness, funding operations, immediate market orders, withdrawals, signed transaction proxy submissions, and live Nautilus deployments. Can create CCTP deposit intents, fund them from a confirmed Superior wallet, place one confirmed Lighter market order with stored credentials, securely return Lighter USDC to the Superior owner wallet, submit user-approved pre-signed Lighter transactions, and start live Lighter deployments that execute real trades. Cannot export private keys, withdraw directly to arbitrary external wallets, or access other users' data."
+    scope: "Read the user's Unified wallet and Lighter market context, and manage contract-supported Nautilus backtests and deployments. One-time actions, venue-specific onboarding, deposits, and withdrawals are available only when the Unified OpenAPI contract explicitly exposes them. Cannot export private keys or access other users' data."
   env:
     - name: SUPERIOR_TRADE_API_KEY
-      description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade. Can onboard Lighter accounts, create deposit intents, place immediate Lighter market orders, submit withdrawals, proxy signed Lighter transactions, and manage Lighter Nautilus deployments for the user's owned Superior trading wallets."
+      description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade. Used for Unified wallet reads, market context, backtests, and contract-supported Lighter deployments."
       required: true
       type: api_key
   externalEndpoints:
     - url: https://unified-api-zag4gzx6gq-an.a.run.app
-      purpose: "Primary venue/framework discovery and runtime backtest, deployment, and execution operations"
-    - url: https://api.superior.trade
-      purpose: "Temporary legacy fallback for Lighter-specific account, funding, withdrawal, and deployment operations"
-    - url: https://mainnet.zklighter.elliot.ai
-      purpose: "Read-only public Lighter checks are performed by the Superior Trade API; agents should not send secrets directly to Lighter."
+      purpose: "Unified Lighter market context, wallet reads, backtests, and deployments"
 ---
 
 # Superior Trade Lighter
 
-Use this skill for Lighter account onboarding, Superior-wallet CCTP funding, immediate market orders, signed transaction proxy submission, secure returns to the Superior wallet, and v3 Nautilus deployments on Superior Trade.
+Use this skill for Lighter market discovery, Nautilus backtests and deployments,
+managed-wallet checks, and supported typed executions through Unified API.
 
-**Primary runtime base URL:** `${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}`
-**Legacy venue base URL:** `https://api.superior.trade`
+Read [`../../references/unified-runtime.md`](../../references/unified-runtime.md)
+before making any request. The OpenAPI contract, not older venue workflows,
+defines which Lighter operations are available.
+
+**Base URL:** `https://unified-api-zag4gzx6gq-an.a.run.app`
 **Auth:** `x-api-key: $SUPERIOR_TRADE_API_KEY`
 **Venue config:** `{ "venue": "lighter", "instrument_id": "<SYMBOL>.LIGHTER" }`
 
-## Unified API first
+## Unified API only
 
 Read [`../../references/unified-runtime.md`](../../references/unified-runtime.md)
 before onboarding, backtesting, deployment, or execution. Use `GET /context/venues`
-and `GET /runtime/frameworks` first, then the Unified runtime endpoints. The
-v3 onboarding and deployment details remain temporary compatibility fallbacks
-when Unified does not expose the required Lighter operation.
+and `GET /runtime/frameworks` first, then the Unified runtime endpoints. If the
+contract does not expose the required Lighter operation, report it as
+unavailable.
 
 ## Robinhood Chain Variant
 
-Use the separate `lighter-robinhood` skill and exchange name for Robinhood Chain Lighter. Do not treat `lighter-robinhood` as an alias for this default `lighter` profile; it uses a different API base, chain id, deposit asset, and instrument suffix.
+Use the separate `lighter-robinhood` skill and venue name for Robinhood Chain Lighter. Do not treat `lighter-robinhood` as an alias for this default `lighter` profile; it uses a different venue profile, chain id, deposit asset, and instrument suffix.
 
 ## Safety Rules
 
 - Never ask for private keys, seed phrases, API private keys, passwords, or wallet credentials.
 - Never log, echo, store, or display secrets. The only credential an agent should use is `SUPERIOR_TRADE_API_KEY`.
 - Never move funds or start live trading without explicit user confirmation.
-- Never submit a Lighter order or `sendTx` proxy payload without explicit user confirmation of market, side, size, order type, and risk.
-- Treat Lighter deposits and withdrawals as real fund-moving actions.
-- Treat signed `sendTx` payloads as real trading actions. The proxy forwards the signed transaction; it does not simulate or validate the trading intent.
-- Do not retry an ambiguous withdrawal automatically. Poll the withdrawal status endpoint and report the persisted state.
-- Use the user's Superior-managed owner wallet as both the Lighter owner and deposit payer. External funds must enter that wallet before funding Lighter.
+- Never submit a Lighter order without explicit user confirmation of market, side, size, order type, and risk.
+- Treat any contract-supported Lighter deposit or withdrawal as a real fund-moving action.
+- Do not retry an ambiguous execution or withdrawal automatically. Read its durable status and report the persisted state.
+- Do not claim managed-wallet funds are available on Lighter unless Unified API returns the required readiness and balance evidence.
 - Do not claim Lighter readiness or balance without querying the API.
+- If onboarding, CCTP funding, delayed withdrawal, or signed proxy submission is
+  absent from `GET /openapi.json`, report it as unavailable.
 
-## Account Model
+## Account readiness
 
-Lighter does not reuse the Hyperliquid funding flow.
-
-```text
-Deposit:
-External wallet -> Superior-managed wallet -> Lighter CCTP intent -> Lighter
-
-Ownership and signing:
-Superior-managed Privy wallet -> Lighter L1 owner -> Lighter API key index 4
-
-Withdrawal:
-Lighter -> secure withdrawal -> Superior-managed owner wallet
-```
-
-The Lighter account index is created only after the first credited deposit. Readiness can move through:
-
-```text
-needs_deposit -> deposit_pending -> account_created
-              -> api_key_approving -> ready
-                                    -> key_provisioning_unknown
-```
-
-Proceed with live deployment only when the account status is `ready`.
+Read the managed wallet with `GET /wallet` and venue support with
+`GET /context/venues`. Do not infer a Lighter-specific account state machine
+from generic wallet history. If Unified API does not return the readiness data
+needed for a live deployment, report the deployment as unavailable rather than
+reusing an older onboarding flow.
 ## Reference files
 
 Load on demand.
 
 | Read | When |
 | --- | --- |
-| `references/api.md` | You need the exact shape for onboarding, status, balance, an immediate order, a CCTP deposit, a withdrawal, or the signed-transaction proxy. |
+| `references/api.md` | You need Unified routing for market context, wallet readiness, backtests, deployments, or supported typed executions. |
 | `references/deployment.md` | You are creating, starting, stopping or monitoring a Lighter Nautilus deployment. |
 
 
@@ -97,4 +81,4 @@ Load on demand.
 
 - Use `superior-trade-auth` first when the user needs an API key.
 - Use `trade-thesis` before deploying a new live strategy idea.
-- Use `hyperliquid` for Hyperliquid Freqtrade deployments. Lighter uses v3 Nautilus deployment APIs instead.
+- Use `hyperliquid` for Hyperliquid workflows. Lighter deployments use the same Unified runtime lifecycle with the Nautilus framework.

@@ -1,6 +1,6 @@
 ---
 name: hyperliquid
-description: "Use when backtesting, deploying, funding, or debugging a live trading strategy on Hyperliquid through the Superior Trade API — writing Freqtrade configs and strategy code, running backtest sweeps, checking wallet balances, depositing USDC, trading HIP-3 stock/commodity perps, or diagnosing a deployment that will not start or trade."
+description: "Use when backtesting, deploying, checking funding readiness, or debugging a Hyperliquid strategy through Superior Trade Unified API — writing Freqtrade configs and strategy code, running sweeps, checking managed-wallet balances, trading HIP-3 perps, or diagnosing a deployment that will not start or trade."
 metadata:
   version: 5.0.0
   updated: 2026-08-12
@@ -11,17 +11,15 @@ metadata:
     type: api_key
     env: SUPERIOR_TRADE_API_KEY
     header: x-api-key
-    scope: "Read-write the user's own backtests and deployments. Can start live trading deployments that execute real trades with the user's platform-managed trading wallet, deposit native Arbitrum USDC from that wallet into Hyperliquid, and return Hyperliquid USDC to the user's server-resolved Superior wallet. Cannot export private keys, bypass the Superior wallet for withdrawals, move unsupported assets/chains, or access other users' data."
+    scope: "Read the user's Unified wallet and Hyperliquid context, manage backtests and deployments, submit supported typed executions, and request a contract-supported withdrawal after confirmation. Venue-specific deposits and transfers are unavailable unless Unified OpenAPI explicitly exposes them. Cannot export private keys or access other users' data."
   env:
     - name: SUPERIOR_TRADE_API_KEY
-      description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade. Can create/manage backtests and deployments including live trading, deposit native Arbitrum USDC from the user's platform-managed wallet into Hyperliquid, and return Hyperliquid USDC to the user's server-resolved Superior wallet. Cannot export private keys, bypass the Superior wallet for withdrawals, move unsupported assets/chains, or access other users' data. Users do not need their own Hyperliquid wallet."
+      description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade. Used for Unified wallet/context reads, backtests, deployments, supported typed executions, and contract-supported withdrawals. It cannot export private keys or access other users' data."
       required: true
       type: api_key
   externalEndpoints:
     - url: https://unified-api-zag4gzx6gq-an.a.run.app
-      purpose: "Primary venue/framework discovery and runtime backtest, deployment, and execution operations"
-    - url: https://api.superior.trade
-      purpose: "Temporary legacy fallback for Hyperliquid-specific account, funding, backtest, and deployment operations"
+      purpose: "All backtesting and deployment operations"
     - url: https://api.hyperliquid.xyz/info
       purpose: "Read-only public queries. Balance checks send the user's public wallet address (not a secret — visible on-chain). Pair validation sends no user data. No authentication or secrets are sent to this endpoint."
 ---
@@ -30,20 +28,21 @@ metadata:
 
 Backtest and deploy Freqtrade strategies on Hyperliquid through Superior Trade's managed cloud.
 
-**Primary runtime base URL:** `${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}`
-**Legacy venue base URL:** `https://api.superior.trade`
-**Auth:** `x-api-key` header on all protected endpoints
-**Unified contract:** `GET /openapi.json`
-**Legacy docs:** `GET /docs` (Swagger UI), `GET /openapi.json` (OpenAPI spec), `GET /llms.txt`
+Read [`../../references/unified-runtime.md`](../../references/unified-runtime.md)
+before any Superior Trade request. Use only current Unified API methods and
+payload fields.
 
-## Unified API first
+**Base URL:** `https://unified-api-zag4gzx6gq-an.a.run.app`
+**Auth:** `x-api-key` header on all protected endpoints
+**Discovery:** `GET /openapi.json` (OpenAPI), `GET /install.txt`, and `GET /.well-known/mcp.json`
+
+## Unified API only
 
 Before venue setup, backtesting, deployment, or execution, read
 [`../../references/unified-runtime.md`](../../references/unified-runtime.md).
 Use `GET /context/venues` and `GET /runtime/frameworks` to discover support,
-then use the Unified runtime endpoints. The existing `/v2` and `/v3` sections
-are temporary compatibility instructions only when the required Hyperliquid
-operation is absent from the Unified contract.
+then use the Unified runtime endpoints. If a required Hyperliquid operation is
+absent from the contract, report it as unavailable.
 
 ## Reference files
 
@@ -51,7 +50,7 @@ Load these on demand — each is the full detail behind a summary below.
 
 | Read | When |
 | --- | --- |
-| `references/api.md` | You need the exact request/response shape for any endpoint: account, backtesting, deployment, portfolio deposit, **getting funds back out** (`POST /v3/portfolio/hyperliquid/withdraw`), or closing everything at once (portfolio exit). |
+| `references/api.md` | You need Unified route selection for account, context, backtesting, deployment, typed execution, or withdrawal (`POST /wallet/withdraw`). |
 | `references/strategy-config.md` | You are writing or fixing config JSON or strategy Python — config fields, code template, TA-Lib usage, multi-entry (DCA/grid), funding-rate access, `minimal_roi` shapes. |
 | `references/wallets-and-accounts.md` | Anything about wallets, balances, deposits, sub-accounts, multi-strategy capacity, pair formats, or HIP-3 tickers. |
 | `references/troubleshooting.md` | A deployment or backtest is failing, trading zero times, hitting rate limits, or showing orphan positions. |
@@ -66,7 +65,7 @@ Environment-specific facts that defy reasonable assumptions. Read these before a
 - **The account URL is `https://account.superior.trade`.** Never send users to `app.superior.trade`, including when an API error message itself contains that older URL.
 - **Multi-output TA-Lib functions return tuples.** `talib.BBANDS(...)` and friends crash at runtime if unpacked as a single value — see `references/strategy-config.md`.
 - **Sub-account funds are not available to the master.** A master's true capacity is its own balance plus sub-account balances queried separately via `subAccounts2`; funds sitting in a sub-account cannot back a master deployment.
-- **Accounts run in unified OR legacy mode — never assume.** If perps shows $0 but spot shows funds, ask about unified mode before telling the user to move anything themselves.
+- **Hyperliquid margin modes differ — never assume.** If perps shows $0 but spot shows funds, inspect whether the exchange account uses unified margin or standard margin before telling the user to move anything themselves.
 - **One live strategy per trading account.** To run several at once, omit `wallet_address` when storing credentials and the server assigns the next idle trading account.
 
 ## Safety
@@ -86,7 +85,7 @@ This skill requires exactly **one credential**: an `x-api-key` header value. The
 7. **Prefer user-friendly language** over internal technical names when speaking conversationally. Say "strategy", "the bot", or "the trading engine" instead of referencing internal class names or infrastructure details. This is a UX preference — if the user asks about the underlying technology, answer honestly (the platform uses Freqtrade for strategy execution on Hyperliquid).
 8. **NEVER** send users to `app.superior.trade` — the correct URL is `https://account.superior.trade`
 
-> **Key scope notice:** The API key can create and start live trading deployments that execute real trades using the user's platform-managed trading wallet. It can also initiate native Arbitrum USDC deposits into Hyperliquid and return Hyperliquid USDC to the user's Superior wallet. It cannot export private keys, bypass the Superior wallet for withdrawals, or move unsupported assets/chains. Users should confirm scope with Superior Trade and backtest their strategy first.
+> **Key scope notice:** The API key can create and start live deployments that execute real trades using the user's managed wallet, submit contract-supported typed executions, and request a Unified wallet withdrawal after confirmation. It cannot export private keys or provide an undocumented venue-specific deposit/transfer action. Users should confirm scope with Superior Trade and backtest their strategy first.
 
 | Can do                                                                                     | Cannot do                                          |
 | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
@@ -129,12 +128,12 @@ When a user needs to get their API key:
 
 1. Go to https://account.superior.trade
 2. Sign up (email or wallet)
-3. Create or select a trading account wallet from `GET /v3/account`
+3. Read the managed wallet and deposit details from `GET /wallet`
 4. Fund the platform trading wallet with native USDC on Arbitrum One using the user's own capital
 5. Create an API key (`st_live_...`) from your account settings
 6. Add it as `SUPERIOR_TRADE_API_KEY` in your agent's environment/credential settings
-7. Bootstrap Hyperliquid setup with `POST /v3/account/{address}/hyperliquid` for the selected trading wallet
-8. If the wallet's USDC is still on Arbitrum, use `POST /v2/portfolio/hyperliquid/deposit` to deposit it into Hyperliquid before live trading
+7. Check Hyperliquid and framework support with `GET /context/venues` and `GET /runtime/frameworks`
+8. If a required venue bootstrap or bridge action is absent from `GET /openapi.json`, report it as unavailable
 
 If the `SUPERIOR_TRADE_API_KEY` env var is already set, use it directly in the `x-api-key` header without prompting the user.
 
@@ -143,17 +142,16 @@ If the `SUPERIOR_TRADE_API_KEY` env var is already set, use it directly in the `
 | Method | Path                          | Description                              |
 | ------ | ----------------------------- | ---------------------------------------- |
 | GET    | `/health`                     | `{ "status": "ok", "timestamp": "..." }` |
-| GET    | `/docs`                       | Swagger UI                               |
-| GET    | `/openapi.json`               | OpenAPI 3.0 spec                         |
-| GET    | `/llms.txt`                   | LLM-optimized API docs                   |
-| GET    | `/.well-known/ai-plugin.json` | AI plugin manifest                       |
+| GET    | `/openapi.json`               | Unified OpenAPI contract                 |
+| GET    | `/install.txt`                | Installation instructions                |
+| GET    | `/.well-known/mcp.json`       | MCP discovery manifest                   |
 
 ## Agent Operating Rules
 
 - **Verification-first:** Every factual claim about balance, wallet status, or deployment health MUST be backed by an API call in the current turn. NEVER assume → report → verify later.
 - **Anti-hallucination:** If you can't call the API, say "I haven't checked yet." Every number must come from a real response.
 - **Conversational:** Make API calls directly and present results conversationally. Show raw payloads only on request.
-- **Backtesting:** Build config + code from user intent → create → start → poll → present results — all automatically.
+- **Backtesting:** Build config + code from user intent → create → poll → present results — all automatically.
 - **Deployment:** Create → store credentials → run checklist → show summary → get confirmation → start.
 - **Proactive:** Ask for missing info conversationally, one concern at a time. Always ask user to run a backtest before first live deployment.
 
@@ -177,13 +175,12 @@ If the agent fails the same task 3+ times (e.g. strategy code keeps crashing, ba
 ### Backtest Workflow
 
 1. Build config + strategy code from user requirements
-2. `POST /v2/backtesting` — create with config, code, and timerange (`{ "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" }`). If the dates are invalid or omitted, the server picks a suitable duration based on the timeframe.
-3. `PUT /v2/backtesting/{id}/status` with `{"action": "start"}`
-4. Poll `GET /v2/backtesting/{id}/status` every 10s until `completed` or `failed` (1–10 min)
-5. `GET /v2/backtesting/{id}/logs` — the metrics live here. `results` and `resultUrl` on the record are null even for a completed run (checked across a month of completed backtests), so parse the Freqtrade summary tables out of the logs
-6. Present summary: total trades, win rate, profit, drawdown, Sharpe ratio
-7. If failed, check `GET /v2/backtesting/{id}/logs`
-8. To cancel: `DELETE /v2/backtesting/{id}`
+2. `POST /runtime/backtests` — create with `framework: "freqtrade"`, `venue: "hyperliquid"`, strategy source/config, instruments, and timerange fields from `GET /openapi.json`.
+3. Poll `GET /runtime/backtests/{id}` every 10s until `completed` or `failed` (1–10 min)
+4. Read `GET /runtime/backtests/{id}/logs` for framework output and diagnostics
+5. Present the result fields published by the current contract: total trades, win rate, profit, drawdown, Sharpe ratio, and duration when available
+6. If failed, check `GET /runtime/backtests/{id}/logs`
+7. To cancel or remove: `DELETE /runtime/backtests/{id}`
 
 #### Backtest Wallet and Stake Sizing
 
@@ -204,10 +201,9 @@ For the **first** backtest of any new idea on a given pair, do not submit a sing
 
 **How to fan out:**
 
-1. Issue all 3 `POST /v2/backtesting` calls in parallel (different config for each variant; same code unless the variant is a code-level change).
-2. Issue all 3 `PUT /v2/backtesting/{id}/status` start calls in parallel.
-3. Poll all 3 `GET /v2/backtesting/{id}/status` endpoints in parallel each cycle.
-4. Fetch all 3 `GET /v2/backtesting/{id}` results in parallel once status is `completed`.
+1. Issue all 3 `POST /runtime/backtests` calls in parallel (different config for each variant; same code unless the variant is a code-level change).
+2. Poll all 3 `GET /runtime/backtests/{id}` endpoints in parallel each cycle.
+3. Fetch all 3 `GET /runtime/backtests/{id}` results in parallel once status is `completed`.
 
 Each backtest runs in isolation, so parallel execution does not slow any single run.
 
@@ -229,7 +225,9 @@ Each backtest runs in isolation, so parallel execution does not slow any single 
 
 #### Result Interpretation
 
-After status = `completed`, read `GET /v2/backtesting/{id}/logs`. Freqtrade prints its full summary there — trade counts, win rate, profit, drawdown and duration tables. Do **not** wait on `resultUrl`: it is null on completed runs, so an agent that blocks on it will report a successful backtest as broken. Present these key metrics:
+After status = `completed`, read both `GET /runtime/backtests/{id}` and
+`GET /runtime/backtests/{id}/logs`. Present only metrics actually returned by
+the Unified API or its framework logs:
 
 - **Total trades** — completed round-trips
 - **Win rate** — percentage of profitable trades
@@ -253,26 +251,26 @@ For 3-variant sweeps, present results as a single table (Variant | Config | PnL%
 
 ### Deployment Workflow
 
-1. `POST /v2/deployment` with config, code, name
+1. `POST /runtime/deployments` with top-level `framework`, `venue`, `mode`, `name`, `code`, and `config`
 2. **Ask the user: live or dry-run?**
-   - **Live:** `POST /v2/deployment/{id}/credentials` with `{ "exchange": "hyperliquid", "wallet_address": "0x...", "subaccount_address": "0x..." }` — `wallet_address` and `subaccount_address` are optional; server assigns wallet automatically if omitted
+   - **Live:** use `PUT /runtime/deployments/{id}/credentials` with a credential form published by `GET /openapi.json`
    - **Dry-run:** Skip the credentials step — the deployment runs in simulation mode (no real funds)
 3. Run the pre-deployment checklist
 4. Show the deployment confirmation summary and wait for explicit user confirmation
-5. `PUT /v2/deployment/{id}/status` → `{"action": "start"}`
-6. Monitor: `GET /v2/deployment/{id}/status`, `GET /v2/deployment/{id}/logs`
-7. Stop: `PUT /v2/deployment/{id}/status` → `{"action": "stop"}`
+5. `PUT /runtime/deployments/{id}/status` → `{"action": "start"}`
+6. Monitor: `GET /runtime/deployments/{id}`, `GET /runtime/deployments/{id}/logs`
+7. Stop: `PUT /runtime/deployments/{id}/status` → `{"action": "stop"}`
 
 ### Pre-Deployment Checklist (MANDATORY)
 
-Before `PUT /v2/deployment/{id}/status` → `{"action":"start"}`:
+Before `PUT /runtime/deployments/{id}/status` → `{"action":"start"}`:
 
 **For live deployments (credentials stored):**
 
-1. **Account ready** — list/select the trading wallet with `GET /v3/account`, then call `POST /v3/account/{address}/hyperliquid` for that wallet before live deployment. This is a write-capable bootstrap endpoint: it may set the Hyperliquid referrer, approve Superior's builder fee, create and approve the agent wallet, and persist agent wallet metadata. After it returns, verify readiness with `GET /v3/account/{address}/status/hyperliquid`; proceed only when `onboarding.ready` is `true` and `onboarding.blockers` is empty. If bootstrap returns `wallet_not_exportable`, `hyperliquid_bootstrap_failed`, or readiness still has blockers, stop and report the exact blocker instead of starting live trading.
-2. **Credentials stored** — `GET /v2/deployment/{id}` → `credentials_status: "stored"`. If not, call `POST /v2/deployment/{id}/credentials`.
-3. **Identify wallets** — `GET /v2/deployment/{id}/credentials` → note `wallet_address` (agent wallet) and `agent_wallet_address`.
-4. **Funds available** — Check the **main wallet** (platform-managed trading wallet), NOT the agent wallet. Agent wallet having $0 is normal. Query `clearinghouseState` + `spotClearinghouseState` for single deployments. If the master account has sub-accounts, also query `subAccounts2` and sum total balance across master + all sub-accounts — funds allocated to sub-accounts are not available to the master. **Then verify `stake_amount × max_open_trades` fits within the available balance.** The exchange reserves a small fee buffer (~1%), so set `stake_amount` to no more than ~95% of `balance / max_open_trades` to avoid silent trade rejections. If Hyperliquid funds are insufficient but the user has native Arbitrum USDC in the platform wallet, ask for explicit confirmation and call `POST /v2/portfolio/hyperliquid/deposit`, then re-check balances before starting. If both Hyperliquid and platform-wallet funds are insufficient, tell the user they must add more of their own capital to the platform account before live trading can proceed.
+1. **Account ready** — fetch `GET /wallet` and `GET /context/venues`. Proceed only when the returned wallet and Hyperliquid capability data show the required support; otherwise report the blocker.
+2. **Credentials stored** — inspect the credential state returned by `GET /runtime/deployments/{id}`. If credentials are required, attach the exact contract-defined payload with `PUT /runtime/deployments/{id}/credentials`.
+3. **Identify wallets** — `GET /runtime/deployments/{id}` → note `wallet_address` (agent wallet) and `agent_wallet_address`.
+4. **Funds available** — Check the managed wallet and live Hyperliquid state. Verify `stake_amount × max_open_trades` fits within available collateral with a fee buffer. If funding is insufficient and Unified API does not publish a venue deposit action, stop and tell the user what funding step remains unavailable.
 5. **No existing positions/orders** — Check `clearinghouseState` for open positions on the main wallet. If positions or orders exist, show the user details (pair, side, size, PnL) and ask them to close before deploying — leftover positions can block new entries or cause unexpected margin usage.
 
 **For dry-run deployments (no credentials):** Skip steps 1–5, the deployment runs in simulation mode without real funds.
@@ -283,12 +281,12 @@ Do NOT skip any step or assume it passed without the API call.
 
 ### Getting Funds Back Out
 
-Two different operations — do not confuse them:
-
-- **Unwind a sub-account** — `POST /v2/portfolio/hyperliquid/exit` closes ALL positions on the given `subaccount_address` and returns its funds to the master. Sub-account scoped; it does not take money off Hyperliquid.
-- **Take USDC off Hyperliquid** — `POST /v3/portfolio/hyperliquid/withdraw` moves USDC to the server-resolved main Superior wallet on Arbitrum. The destination is resolved server-side, so you cannot send to an arbitrary or external address.
-
-Both move real money. State the amount and destination and get an explicit yes first. Stop any strategy trading that account before withdrawing, or the withdrawal can underfund a live position. Hyperliquid also deducts a 1 USDC fee from the withdrawal amount — never withdraw 1 USDC or less. Full shapes and the confirmation template are in `references/api.md`.
+Use `POST /wallet/withdraw` only with the request shape and verified destination
+published by the Unified contract. A typed `POST /runtime/executions` request may
+place or cancel supported orders; it is not an undocumented exit-all or
+sub-account transfer primitive. If the required unwind action is absent from
+`GET /openapi.json`, report it as unavailable. Every money-moving action
+requires an exact summary and explicit confirmation first.
 
 ## Related skills
 

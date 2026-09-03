@@ -14,7 +14,7 @@ Use this when someone asks for fade, overreaction, mean reversion, range trading
 
 ## What the agent should look for
 
-- Exact market slug from `POST /v3/markets/search`.
+- Canonical Polymarket market from `GET /context/markets?venue=polymarket`.
 - A stable market with enough historical fills.
 - Probability significantly far from a rolling median.
 - Weak follow-through after the jump.

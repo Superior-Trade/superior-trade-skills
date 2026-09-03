@@ -21,7 +21,8 @@
       "should_trigger": true,
       "assertions": [
         "Does not ask the user to supply or re-enter the key",
-        "Moves to verifying the key and listing trading accounts",
+        "Verifies the key with GET /account or GET /wallet and checks Unified venue/framework capabilities",
+        "Does not call a versioned account endpoint or the legacy API base",
         "Does not repeat the key value back"
       ]
     },
@@ -52,8 +53,8 @@
       "should_trigger": true,
       "assertions": [
         "States that dry-run is Hyperliquid-only and not available on Polymarket",
-        "States that Polymarket requires an owned wallet_address when storing credentials",
-        "Does not repeat the Hyperliquid rule that omitting wallet_address auto-assigns an account",
+        "Uses PUT /runtime/deployments/{id}/credentials only when the Unified contract requires credentials",
+        "Does not invent a wallet_address requirement or credential payload absent from Unified OpenAPI",
         "Offers a backtest as the available rehearsal instead"
       ]
     },
@@ -62,10 +63,22 @@
       "prompt": "How do I get money into my Superior Trade account so I can trade on Hyperliquid?",
       "should_trigger": true,
       "assertions": [
-        "Describes funding the platform-managed wallet with native USDC on Arbitrum One",
-        "Names the deposit endpoint rather than giving a raw venue address",
+        "Reads the managed destination and deposit details with GET /wallet",
+        "Treats GET /wallet/deposits as history rather than a transfer action",
+        "Reports a Hyperliquid-specific deposit action as unavailable when Unified OpenAPI does not expose one",
         "Never directs funds to an agent wallet address",
-        "Requires explicit confirmation before any deposit call"
+        "Does not fall back to a versioned portfolio deposit endpoint"
+      ]
+    },
+    {
+      "id": "unified-only-migration",
+      "prompt": "The old guide tells me to use the previous backtesting API. Can you use that fallback if Unified does not work?",
+      "should_trigger": true,
+      "assertions": [
+        "Uses POST /runtime/backtests and says creation queues the run",
+        "Refuses the versioned fallback and reports missing Unified functionality as unavailable",
+        "Uses the Unified production base or SUPERIOR_UNIFIED_API_URL",
+        "Does not emit a versioned endpoint"
       ]
     },
     {

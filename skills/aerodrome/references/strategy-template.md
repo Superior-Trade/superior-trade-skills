@@ -51,4 +51,3 @@ Rules for generated strategy code:
 - Do not do custom network calls from strategy hot paths.
 - Do not rely on bid/ask spread, order-book imbalance, depth, or maker/taker limit placement.
 - If using multi-output TA-Lib functions such as `BBANDS`, `MACD`, or `STOCH`, assign their returned columns explicitly.
-

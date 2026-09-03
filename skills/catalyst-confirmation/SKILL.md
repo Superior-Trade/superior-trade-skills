@@ -14,7 +14,7 @@ Use this when the user ties a strategy idea to an external event (CPI, Fed, cour
 
 ## What the agent should look for
 
-- Exact market slug from `POST /v3/markets/search`.
+- Canonical Polymarket market from `GET /context/markets?venue=polymarket`.
 - Clear catalyst timestamp or date.
 - Evidence of filled-trade reaction after the catalyst window.
 - Enough filled history around the event window.
@@ -66,4 +66,4 @@ Enter only when the expected directional catalyst outcome appears and a filled-t
 
 ## User-facing framing
 
-"This is a catalyst-led archetype, not a guaranteed edge. It runs on filled `TradeTick` history and exact market slugs, then becomes a starting point for custom Nautilus strategy generation."
+"This is a catalyst-led archetype, not a guaranteed edge. It runs on filled `TradeTick` history and exact market identifiers, then becomes a starting point for custom Nautilus strategy generation."

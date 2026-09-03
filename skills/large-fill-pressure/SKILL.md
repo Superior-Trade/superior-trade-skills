@@ -14,7 +14,7 @@ Use this when the user asks about whales, big fills, unusual size, or "who is mo
 
 ## What the agent should look for
 
-- Exact market slug from `POST /v3/markets/search`.
+- Canonical Polymarket market from `GET /context/markets?venue=polymarket`.
 - High-quality filled volume history with enough ticks.
 - Fill sizes meaningfully above that market's recent median.
 - Multiple large fills in a short interval with same-direction follow-through.

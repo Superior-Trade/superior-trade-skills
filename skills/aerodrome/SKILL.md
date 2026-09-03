@@ -7,13 +7,17 @@ metadata:
 
 # Aerodrome Trading
 
+Read [`../../references/unified-runtime.md`](../../references/unified-runtime.md)
+before any Superior Trade request. Use the current OpenAPI schema for every
+payload and stop if Aerodrome/Freqtrade is not listed as supported.
+
 ## Overview
 
 Use this skill only for Aerodrome trading on Base through Superior Trade. Aerodrome is spot-only AMM swap execution: no futures, no margin, no shorting, no leverage, no sub-accounts, and no order book.
 
 ## Production Defaults
 
-- Superior Trade API base URL: `https://api.superior.trade`
+- Superior Trade API base URL: `https://unified-api-zag4gzx6gq-an.a.run.app`
 - Auth header: `x-api-key: $SUPERIOR_TRADE_API_KEY`
 - Base RPC URL: `https://mainnet.base.org`
 - Keep setup simple: one pair, one numeric stake amount, static pairlist, market orders, and no orderbook pricing.
@@ -22,7 +26,7 @@ Use this skill only for Aerodrome trading on Base through Superior Trade. Aerodr
 
 When behavior is unclear, inspect these local sources before answering:
 
-- Production API: `https://api.superior.trade`
+- Production API: `https://unified-api-zag4gzx6gq-an.a.run.app`
 
 ## Non-Negotiables
 
@@ -130,26 +134,23 @@ Notes:
 ## Backtest Workflow
 
 1. Build Aerodrome config and Freqtrade strategy code.
-2. Check data availability with `GET https://api.superior.trade/v2/backtesting-data/aerodrome?pair=AERO/USDC&timeframe=5m`.
-3. Create a backtest with `POST https://api.superior.trade/v2/backtesting` using `{ "config": {}, "code": "...", "timerange": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" } }`.
-4. Start it with `PUT https://api.superior.trade/v2/backtesting/{id}/status` and `{ "action": "start" }`.
-5. Poll `GET https://api.superior.trade/v2/backtesting/{id}/status` until `completed` or `failed`.
-6. Fetch `GET https://api.superior.trade/v2/backtesting/{id}` and inspect `result_url` for full metrics.
-7. Present total trades, win rate, profit, drawdown, and whether results justify live testing.
+2. Check data availability with `GET https://unified-api-zag4gzx6gq-an.a.run.app/runtime/backtests/dataset` and the query fields published by OpenAPI.
+3. Create a backtest with `POST https://unified-api-zag4gzx6gq-an.a.run.app/runtime/backtests` using `framework: "freqtrade"`, `venue: "aerodrome"`, strategy source/config, instruments, and timerange fields from the current contract.
+4. Creation queues the run; poll `GET https://unified-api-zag4gzx6gq-an.a.run.app/runtime/backtests/{id}` until `completed` or `failed`.
+5. Fetch the backtest record and `GET /runtime/backtests/{id}/logs` for full metrics and diagnostics.
+6. Present total trades, win rate, profit, drawdown, and whether results justify live testing.
 
 Do not offer live deployment after a zero-trade backtest unless the user explicitly wants to debug live behavior.
 
 ## Live Deployment Workflow
 
-1. Create deployment with `POST https://api.superior.trade/v2/deployment` using Aerodrome config and strategy code.
-2. Store or confirm credentials using the current API behavior:
-   - Prefer the documented v2 flow when supported: `POST https://api.superior.trade/v2/deployment/{id}/credentials` with `{"exchange":"aerodrome"}`.
-   - If the current API rejects Aerodrome on the v2 credentials route, inspect the local `api/src/routes/credentials-v2.ts`, `api/src/routes/deployment.ts`, and OpenAPI before proceeding. Do not ask the user for private keys unless the live API explicitly requires that legacy flow.
+1. Create a deployment with `POST https://unified-api-zag4gzx6gq-an.a.run.app/runtime/deployments` using top-level `framework`, `venue`, `mode`, `name`, `code`, and `config` fields.
+2. If credentials are required, use `PUT /runtime/deployments/{id}/credentials` with the exact form published by Unified OpenAPI. Never improvise private-key fields.
 3. Run the pre-deployment checklist below.
 4. Show a concise live trading summary and wait for explicit confirmation.
-5. Start with `PATCH https://api.superior.trade/v2/deployment/{id}/status` and `{ "action": "start" }`.
-6. Monitor status and logs with `GET https://api.superior.trade/v2/deployment/{id}/status` and `GET https://api.superior.trade/v2/deployment/{id}/logs`.
-7. Stop with `PATCH https://api.superior.trade/v2/deployment/{id}/status` and `{ "action": "stop" }`.
+5. Start with `PUT https://unified-api-zag4gzx6gq-an.a.run.app/runtime/deployments/{id}/status` and `{ "action": "start" }`.
+6. Monitor status and logs with `GET https://unified-api-zag4gzx6gq-an.a.run.app/runtime/deployments/{id}` and `GET https://unified-api-zag4gzx6gq-an.a.run.app/runtime/deployments/{id}/logs`.
+7. Stop with `PUT https://unified-api-zag4gzx6gq-an.a.run.app/runtime/deployments/{id}/status` and `{ "action": "stop" }`.
 
 ### Pre-Deployment Checklist
 

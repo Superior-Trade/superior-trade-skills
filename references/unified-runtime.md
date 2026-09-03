@@ -1,40 +1,52 @@
-# Unified API runtime compatibility
+# Unified API
 
-Use the Unified API first for Phase 1 workflows. Its production base URL is
-`https://unified-api-zag4gzx6gq-an.a.run.app`; use `SUPERIOR_UNIFIED_API_URL`
-when the agent environment supplies a different base URL. Authenticate with
-`x-api-key: $SUPERIOR_TRADE_API_KEY`.
+Use the Unified API for every Superior Trade operation documented by this
+package.
 
-Read `GET /openapi.json` when an exact request or response shape is needed.
-Use `GET /.well-known/mcp.json` to discover the authenticated MCP endpoint.
+- Base URL: `${SUPERIOR_UNIFIED_API_URL:-https://unified-api-zag4gzx6gq-an.a.run.app}`
+- Authentication: `x-api-key: $SUPERIOR_TRADE_API_KEY`
+- Contract: `GET /openapi.json`
+- MCP discovery: `GET /.well-known/mcp.json`
 
-## Primary runtime workflow
+Request and response shapes come from the OpenAPI contract. Do not reuse a
+payload from an older API solely because its resource name looks similar.
 
-1. Discover supported venue/framework combinations with `GET /context/venues`
-   and `GET /runtime/frameworks`.
-2. Create and inspect backtests with `POST /runtime/backtests`,
-   `GET /runtime/backtests/{id}`, and `GET /runtime/backtests/{id}/logs`.
-3. Create and manage deployments with `POST /runtime/deployments`,
-   `GET /runtime/deployments/{id}`, `PUT /runtime/deployments/{id}/credentials`,
-   `PUT /runtime/deployments/{id}/status`, and `GET /runtime/deployments/{id}/logs`.
-4. Create and monitor individual executions with `POST /runtime/executions`,
-   `GET /runtime/executions/{id}`, and `GET /runtime/executions/{id}/logs`.
+## Workflow
 
-Never start a live deployment or execution without explicit confirmation in the
-current turn. Fetch the resulting resource or logs before reporting its status.
+1. Read `GET /account`, `GET /wallet`, `GET /context/venues`, and
+   `GET /runtime/frameworks` before selecting a venue/runtime combination.
+2. Discover instruments and data with `GET /context/markets`,
+   `GET /context/datasets`, `GET /context/candles`, `GET /context/funding`,
+   `GET /context/scan`, and `GET /context/setup/{symbol}`.
+3. Create a backtest with `POST /runtime/backtests`. Creation queues the run;
+   there is no separate start request. Poll `GET /runtime/backtests/{id}` and
+   inspect `GET /runtime/backtests/{id}/logs`. Cancel or remove it with
+   `DELETE /runtime/backtests/{id}`.
+4. Create a deployment with `POST /runtime/deployments`. Update metadata with
+   `PATCH /runtime/deployments/{id}`, attach credentials with
+   `PUT /runtime/deployments/{id}/credentials`, and start or stop it with
+   `PUT /runtime/deployments/{id}/status`. Read the deployment, logs, and
+   metrics before reporting its state.
+5. Use `POST /runtime/executions` for a supported one-time venue action. Reuse
+   the same `Idempotency-Key` for retries and poll
+   `GET /runtime/executions/{id}` for the durable sanitized result. The current
+   contract supports Hyperliquid `order`/`cancel` and Polymarket
+   `placeMarketOrder`/`cancelOrder`. Send only the typed venue action—never
+   caller code, credentials, signatures, private keys, or nonces.
 
-## Temporary legacy compatibility
+Never start live trading, place or cancel an order, delete a deployment, or
+withdraw funds without explicit confirmation for the exact action in the
+current conversation.
 
-Use a legacy `/v2` or `/v3` endpoint only when the Unified OpenAPI contract
-does not expose the required operation or its required venue/framework input.
-State that fallback explicitly, keep the operation within the relevant venue
-skill, and do not substitute a legacy route merely because it is familiar.
+## Accounts and funding
 
-| Unified capability | Legacy fallback during migration |
-| --- | --- |
-| Backtest lifecycle | `/v2/backtesting` or `/v3/backtest` |
-| Deployment lifecycle | `/v2/deployment` or `/v3/deployments` |
-| Venue-specific account setup/readiness | `/v3/account/{address}/{venue}` and its status route |
+Register with `POST /account/register`, verify the OTP with
+`POST /account/verify`, then keep the returned key in the normal credential
+store. `GET /wallet` returns the managed wallet, deposit details, balances, and
+readiness exposed by Unified API. `GET /wallet/deposits` and
+`GET /wallet/withdrawals` are history reads. Withdraw through
+`POST /wallet/withdraw` only after confirmation.
 
-Do not use a fallback for account, wallet, context, runtime discovery, or MCP
-operations that the Unified API already exposes.
+If a venue-specific bootstrap, deposit, transfer, or exit action is not present
+in `GET /openapi.json`, report that it is unavailable through Unified API. Do
+not fall back to a versioned API.
