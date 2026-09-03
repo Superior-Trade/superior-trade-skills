@@ -1,15 +1,19 @@
 ---
 name: intelligence-buckets
-description: Reference for the four Intelligence buckets — Squeeze fuel, Stealth accumulation, Coiled spring, Basis flipping. Read before presenting scan results so you can explain WHY a pair scored, what the AI Critic flags, and which deploy template fits.
+description: Optional strategy lenses for squeeze fuel, stealth accumulation, coiled spring, and basis flipping. These are analytical frameworks, not Unified API response categories.
 version: 0.1.0
 updated: 2026-05-09
 ---
 
-# The Four Buckets
+# Four optional strategy lenses
 
-Every scan classifies pairs into four mutually exclusive setup types. Each bucket has a specific shape — what we look for, what the alpha is if you're right, and how the score is computed. The engine ranks pairs **per bucket** at every timeframe (15m / 1h / 4h / 24h) and picks the strongest fit per pair.
+These four lenses are strategy-design aids. They describe what to look for, the
+possible edge, and risks to challenge before a backtest. The Unified
+`/context/scan` contract uses `momentum`, `mean_reversion`, `breakout`, and
+`volume` categories; it does not return the historical bucket shape below.
 
-Use this file to translate a raw `best_fit.bucket` value into a meaningful explanation for the user.
+Apply a lens only when the current response evidence and the user's thesis
+support it. Never claim the API selected one of these lenses.
 
 ---
 

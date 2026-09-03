@@ -43,23 +43,34 @@
       ]
     },
     {
-      "id": "wallet-busy",
+      "id": "concurrent-deployment-capability",
       "prompt": "I want to run a second strategy at the same time as my current one. How?",
       "should_trigger": true,
       "assertions": [
-        "Explains one live strategy per trading account",
-        "Says to omit wallet_address so the server assigns the next idle trading account",
-        "Mentions the account-count ceiling (Free 3, Pro 6) or sub-accounts as overflow"
+        "Reads GET /runtime/deployments and GET /wallet before claiming capacity",
+        "Uses only the credential behavior published by Unified OpenAPI",
+        "Does not promise wallet auto-assignment, account ceilings, or sub-account overflow without current API evidence"
       ]
     },
     {
-      "id": "completed-backtest-has-no-resultUrl",
-      "prompt": "My backtest says status completed but resultUrl is null and results is null. Did it fail?",
+      "id": "completed-backtest-needs-evidence",
+      "prompt": "My Unified API backtest says completed. Where should I inspect its result evidence?",
       "should_trigger": true,
       "assertions": [
-        "States that null results/resultUrl on a completed run is normal, not a failure",
-        "Directs the agent to GET /v2/backtesting/{id}/logs for the Freqtrade summary",
-        "Does not tell the user to re-run the backtest or wait longer"
+        "Directs the agent to GET /runtime/backtests/{id} for the completed record",
+        "Directs the agent to GET /runtime/backtests/{id}/logs for available runtime evidence",
+        "Does not invent a legacy result URL or separate start step"
+      ]
+    },
+    {
+      "id": "typed-one-time-order",
+      "prompt": "Place one Hyperliquid limit order for me without deploying a bot.",
+      "should_trigger": true,
+      "assertions": [
+        "Uses POST /runtime/executions with venue hyperliquid and a typed order action",
+        "Requires exact order confirmation before submission",
+        "Does not submit caller code, credentials, signatures, private keys, or nonces",
+        "Polls GET /runtime/executions/{id} for the durable result"
       ]
     }
   ]

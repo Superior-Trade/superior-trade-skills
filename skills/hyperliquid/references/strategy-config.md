@@ -293,4 +293,3 @@ Do **not** set both `stake_amount: "unlimited"` and `max_open_trades: -1`. Use a
 | -5%      | ~$11.05           |
 | -10%     | ~$11.67           |
 | -30%     | ~$15.00           |
-

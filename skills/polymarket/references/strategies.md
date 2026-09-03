@@ -4,10 +4,10 @@ These templates are starting points for writing and adapting Polymarket strategi
 
 ## How to use this folder
 
-1. Search markets with `POST /v3/markets/search` and pick an exact market slug. If the user provides a Polymarket event URL, pass the full URL as the search query so child markets can be expanded.
+1. Search `GET /context/markets?venue=polymarket` and select the canonical symbol and Nautilus identifier returned by Unified API.
 2. Pick the closest archetype based on market shape and your thesis.
 3. Generate NautilusTrader strategy code with `on_trade_tick`.
-4. Backtest with `POST /v3/backtest` using custom `strategySource` and `strategyConfig`.
+4. Backtest with `POST /runtime/backtests` using custom `strategySource` and `strategyConfig`.
 5. Review filled-trade behavior, PnL, duration, and whether assumptions held.
 6. Tune parameters or reject the setup.
 7. Discuss deployment only after backtest completion and explicit user confirmation.
@@ -15,7 +15,7 @@ These templates are starting points for writing and adapting Polymarket strategi
 ## Core assumptions to keep in view
 
 - Backtests are built from filled `TradeTick` data, not full order-book simulation.
-- Exact market slugs from search results are required before writing a strategy.
+- Exact market identifiers from Unified context are required before writing a strategy.
 - Filled-trade backtests can reduce guesswork, but they do not replace liquidity or queue-aware live execution.
 
 ## Archetypes

@@ -15,7 +15,7 @@
  "info": {
   "description": "Unified account, wallet, market context, runtime, deployment, backtest, execution, and MCP API.",
   "title": "Superior Trade Unified API",
-  "version": "0.1.0"
+  "version": "0.2.0"
  },
  "openapi": "3.1.0",
  "paths": {
@@ -888,7 +888,93 @@
     "operationId": "listExecutions",
     "responses": {
      "200": {
-      "description": "OK"
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": false,
+         "properties": {
+          "executions": {
+           "items": {
+            "additionalProperties": false,
+            "properties": {
+             "account_address": {
+              "type": "string"
+             },
+             "action_type": {
+              "enum": [
+               "order",
+               "cancel",
+               "placeMarketOrder",
+               "cancelOrder"
+              ],
+              "type": "string"
+             },
+             "created_at": {
+              "format": "date-time",
+              "type": "string"
+             },
+             "error": {
+              "additionalProperties": true,
+              "type": "object"
+             },
+             "finished_at": {
+              "format": "date-time",
+              "type": [
+               "string",
+               "null"
+              ]
+             },
+             "id": {
+              "type": "string"
+             },
+             "result": {
+              "additionalProperties": true,
+              "type": "object"
+             },
+             "status": {
+              "enum": [
+               "processing",
+               "succeeded",
+               "failed"
+              ],
+              "type": "string"
+             },
+             "venue": {
+              "enum": [
+               "hyperliquid",
+               "polymarket"
+              ],
+              "type": "string"
+             }
+            },
+            "required": [
+             "id",
+             "status",
+             "venue",
+             "action_type",
+             "account_address",
+             "created_at"
+            ],
+            "type": "object"
+           },
+           "type": "array"
+          },
+          "next_cursor": {
+           "type": [
+            "string",
+            "null"
+           ]
+          }
+         },
+         "required": [
+          "executions",
+          "next_cursor"
+         ],
+         "type": "object"
+        }
+       }
+      },
+      "description": "Owned one-time venue executions"
      }
     },
     "security": [
@@ -899,13 +985,420 @@
       "BearerAuth": []
      }
     ],
-    "summary": "List and create one-time executions"
+    "summary": "List durable one-time venue executions"
    },
    "post": {
+    "description": "Synchronously run exactly one typed place or cancel operation on a venue with a managed wallet. Hyperliquid accepts its native order/cancel action object; Polymarket accepts placeMarketOrder/cancelOrder. Arbitrary code, caller credentials, signatures, and nonces are rejected.",
     "operationId": "createExecution",
+    "parameters": [
+     {
+      "description": "Unique key for this logical order request. Reusing it with different input returns 409.",
+      "in": "header",
+      "name": "Idempotency-Key",
+      "required": true,
+      "schema": {
+       "minLength": 1,
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "oneOf": [
+         {
+          "additionalProperties": false,
+          "properties": {
+           "account_address": {
+            "description": "Optional owned managed trading account. The default active account is used when omitted.",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "type": "string"
+           },
+           "action": {
+            "oneOf": [
+             {
+              "additionalProperties": false,
+              "properties": {
+               "builder": {
+                "additionalProperties": true,
+                "type": "object"
+               },
+               "grouping": {
+                "enum": [
+                 "na",
+                 "normalTpsl",
+                 "positionTpsl"
+                ],
+                "type": "string"
+               },
+               "orders": {
+                "items": {
+                 "additionalProperties": false,
+                 "properties": {
+                  "a": {
+                   "description": "Hyperliquid asset index in native number or numeric-string form; the venue SDK validates and normalizes it.",
+                   "oneOf": [
+                    {
+                     "type": "number"
+                    },
+                    {
+                     "type": "string"
+                    }
+                   ]
+                  },
+                  "b": {
+                   "description": "True for buy, false for sell.",
+                   "type": "boolean"
+                  },
+                  "c": {
+                   "description": "Optional client order id.",
+                   "type": "string"
+                  },
+                  "p": {
+                   "description": "Price in native number or decimal-string form; the venue SDK validates and normalizes it.",
+                   "oneOf": [
+                    {
+                     "type": "number"
+                    },
+                    {
+                     "type": "string"
+                    }
+                   ]
+                  },
+                  "r": {
+                   "description": "Reduce-only flag.",
+                   "type": "boolean"
+                  },
+                  "s": {
+                   "description": "Order size in native number or decimal-string form; the venue SDK validates and normalizes it.",
+                   "oneOf": [
+                    {
+                     "type": "number"
+                    },
+                    {
+                     "type": "string"
+                    }
+                   ]
+                  },
+                  "t": {
+                   "additionalProperties": true,
+                   "description": "Native Hyperliquid order type, for example {\"limit\":{\"tif\":\"Gtc\"}}.",
+                   "type": "object"
+                  }
+                 },
+                 "required": [
+                  "a",
+                  "b",
+                  "p",
+                  "s",
+                  "r",
+                  "t"
+                 ],
+                 "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+               },
+               "type": {
+                "const": "order",
+                "type": "string"
+               }
+              },
+              "required": [
+               "type",
+               "orders"
+              ],
+              "type": "object"
+             },
+             {
+              "additionalProperties": false,
+              "properties": {
+               "cancels": {
+                "items": {
+                 "additionalProperties": false,
+                 "properties": {
+                  "a": {
+                   "oneOf": [
+                    {
+                     "type": "number"
+                    },
+                    {
+                     "type": "string"
+                    }
+                   ]
+                  },
+                  "o": {
+                   "oneOf": [
+                    {
+                     "type": "number"
+                    },
+                    {
+                     "type": "string"
+                    }
+                   ]
+                  }
+                 },
+                 "required": [
+                  "a",
+                  "o"
+                 ],
+                 "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+               },
+               "type": {
+                "const": "cancel",
+                "type": "string"
+               }
+              },
+              "required": [
+               "type",
+               "cancels"
+              ],
+              "type": "object"
+             }
+            ]
+           },
+           "venue": {
+            "const": "hyperliquid",
+            "type": "string"
+           }
+          },
+          "required": [
+           "venue",
+           "action"
+          ],
+          "type": "object"
+         },
+         {
+          "additionalProperties": false,
+          "properties": {
+           "account_address": {
+            "description": "Optional owned managed trading account. The default active account is used when omitted.",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "type": "string"
+           },
+           "action": {
+            "oneOf": [
+             {
+              "additionalProperties": false,
+              "properties": {
+               "amount": {
+                "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+                "type": "string"
+               },
+               "orderType": {
+                "default": "FOK",
+                "enum": [
+                 "FOK",
+                 "FAK"
+                ],
+                "type": "string"
+               },
+               "price": {
+                "exclusiveMinimum": 0,
+                "maximum": 1,
+                "type": "number"
+               },
+               "side": {
+                "enum": [
+                 "BUY",
+                 "SELL"
+                ],
+                "type": "string"
+               },
+               "tokenID": {
+                "minLength": 1,
+                "type": "string"
+               },
+               "type": {
+                "const": "placeMarketOrder",
+                "type": "string"
+               }
+              },
+              "required": [
+               "type",
+               "tokenID",
+               "side",
+               "amount"
+              ],
+              "type": "object"
+             },
+             {
+              "additionalProperties": false,
+              "properties": {
+               "orderID": {
+                "minLength": 1,
+                "type": "string"
+               },
+               "type": {
+                "const": "cancelOrder",
+                "type": "string"
+               }
+              },
+              "required": [
+               "type",
+               "orderID"
+              ],
+              "type": "object"
+             }
+            ]
+           },
+           "venue": {
+            "const": "polymarket",
+            "type": "string"
+           }
+          },
+          "required": [
+           "venue",
+           "action"
+          ],
+          "type": "object"
+         }
+        ]
+       }
+      }
+     },
+     "required": true
+    },
     "responses": {
-     "200": {
-      "description": "OK"
+     "201": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": false,
+         "properties": {
+          "account_address": {
+           "type": "string"
+          },
+          "action_type": {
+           "enum": [
+            "order",
+            "cancel",
+            "placeMarketOrder",
+            "cancelOrder"
+           ],
+           "type": "string"
+          },
+          "created_at": {
+           "format": "date-time",
+           "type": "string"
+          },
+          "error": {
+           "additionalProperties": true,
+           "type": "object"
+          },
+          "finished_at": {
+           "format": "date-time",
+           "type": [
+            "string",
+            "null"
+           ]
+          },
+          "id": {
+           "type": "string"
+          },
+          "result": {
+           "additionalProperties": true,
+           "type": "object"
+          },
+          "status": {
+           "enum": [
+            "processing",
+            "succeeded",
+            "failed"
+           ],
+           "type": "string"
+          },
+          "venue": {
+           "enum": [
+            "hyperliquid",
+            "polymarket"
+           ],
+           "type": "string"
+          }
+         },
+         "required": [
+          "id",
+          "status",
+          "venue",
+          "action_type",
+          "account_address",
+          "created_at"
+         ],
+         "type": "object"
+        }
+       }
+      },
+      "description": "Order action completed or an identical completed request was replayed"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object"
+        }
+       }
+      },
+      "description": "Invalid or unsupported order action"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object"
+        }
+       }
+      },
+      "description": "The API key lacks trade permission or the selected managed account is not owned by the caller"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object"
+        }
+       }
+      },
+      "description": "Idempotency conflict, in-progress execution, or account not ready"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object"
+        }
+       }
+      },
+      "description": "The venue rejected the order action"
+     },
+     "502": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object"
+        }
+       }
+      },
+      "description": "The venue is unavailable"
+     },
+     "503": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object"
+        }
+       }
+      },
+      "description": "The one-time venue execution is unavailable or its venue result could not be persisted"
      }
     },
     "security": [
@@ -916,15 +1409,103 @@
       "BearerAuth": []
      }
     ],
-    "summary": "List and create one-time executions"
+    "summary": "Run a one-time venue execution"
    }
   },
   "/runtime/executions/{id}": {
    "get": {
     "operationId": "getExecution",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
     "responses": {
      "200": {
-      "description": "OK"
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": false,
+         "properties": {
+          "account_address": {
+           "type": "string"
+          },
+          "action_type": {
+           "enum": [
+            "order",
+            "cancel",
+            "placeMarketOrder",
+            "cancelOrder"
+           ],
+           "type": "string"
+          },
+          "created_at": {
+           "format": "date-time",
+           "type": "string"
+          },
+          "error": {
+           "additionalProperties": true,
+           "type": "object"
+          },
+          "finished_at": {
+           "format": "date-time",
+           "type": [
+            "string",
+            "null"
+           ]
+          },
+          "id": {
+           "type": "string"
+          },
+          "result": {
+           "additionalProperties": true,
+           "type": "object"
+          },
+          "status": {
+           "enum": [
+            "processing",
+            "succeeded",
+            "failed"
+           ],
+           "type": "string"
+          },
+          "venue": {
+           "enum": [
+            "hyperliquid",
+            "polymarket"
+           ],
+           "type": "string"
+          }
+         },
+         "required": [
+          "id",
+          "status",
+          "venue",
+          "action_type",
+          "account_address",
+          "created_at"
+         ],
+         "type": "object"
+        }
+       }
+      },
+      "description": "Owned one-time venue execution"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object"
+        }
+       }
+      },
+      "description": "Execution not found"
      }
     },
     "security": [
@@ -935,26 +1516,7 @@
       "BearerAuth": []
      }
     ],
-    "summary": "Get a one-time execution"
-   }
-  },
-  "/runtime/executions/{id}/logs": {
-   "get": {
-    "operationId": "getExecutionLogs",
-    "responses": {
-     "200": {
-      "description": "OK"
-     }
-    },
-    "security": [
-     {
-      "ApiKeyAuth": []
-     },
-     {
-      "BearerAuth": []
-     }
-    ],
-    "summary": "Get one-time execution logs"
+    "summary": "Get a durable one-time venue execution"
    }
   },
   "/runtime/frameworks": {

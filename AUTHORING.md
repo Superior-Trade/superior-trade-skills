@@ -6,7 +6,9 @@ What we learned building it, and the rules `pnpm validate` enforces. Sources at 
 
 **1. `skills/<name>/SKILL.md`. Exactly one level.**
 
-Loaders resolve one level deep. A skill at `skills/v2/exchanges/hyperliquid/SKILL.md` is not "organised" — it is invisible. It never appears in the skill listing and cannot be invoked. We shipped that layout and lost 29 of 30 skills to it; verified by running a live session against both depths and watching only the flat one appear. Express taxonomy in `metadata`, never in the directory tree.
+Loaders resolve one level deep. A skill nested at
+`skills/versioned/exchanges/hyperliquid/SKILL.md` is not "organised" — it is
+invisible. Express taxonomy in `metadata`, never in the directory tree.
 
 **2. Six frontmatter keys, and no others.**
 
@@ -63,25 +65,18 @@ The `skill-creator` plugin automates the with/without comparison:
 ## Endpoints come from the API's contract, not from memory
 
 The API publishes a curated OpenAPI surface **for this library** at
-`GET /v3/agent-skill/openapi.json`. That is the source of truth for what an agent
-is sanctioned to call. Snapshots of it — and of the two general specs — live in
-`scripts/api-contract/` and are committed, so the check is deterministic offline
+`GET /openapi.json`. That is the source of truth for what an agent
+is sanctioned to call. A snapshot lives in `scripts/api-contract/unified.json`
+and is committed, so the check is deterministic offline
 and a contract change arrives as a reviewable diff instead of a silent flip.
 
-`pnpm validate` runs the audit. It reports two things:
-
-- **ERROR — in no published contract.** The skill is sending agents at something
-  that does not exist. Two of these had been shipped and live for months before
-  anyone called them.
-- **WARN — resolves, but is not in the agent-skill contract.** It works today,
-  but nobody has promised agents it will keep working. A cluster of these usually
-  means a venue shipped ahead of the contract; raise it with the API team rather
-  than silencing it.
+`pnpm validate` runs the audit. It rejects versioned Superior Trade routes and
+any method/path claim missing from the Unified contract.
 
 Re-download the snapshots deliberately, never as part of a routine run:
 
 ```bash
-SUPERIOR_TRADE_API_KEY=... pnpm contract:refresh
+pnpm contract:refresh
 ```
 
 Hand-maintained endpoint lists in skill files go stale silently. Prefer telling

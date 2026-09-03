@@ -7,7 +7,9 @@ description: Use when a user needs a QR code or wallet payment URI to fund a Sup
 
 Use this skill to create a wallet-scannable QR code for sending a coin or ERC-20 token to a Superior-managed EVM wallet address on a named chain.
 
-This is for funding the wallet itself. It is not the same as a venue-specific deposit intent. For Lighter, a user may first need USDC in a payer wallet, but the Lighter account still requires `POST /v3/portfolio/lighter/deposit` to get the Lighter CCTP intent address.
+This is for funding the wallet itself. It is not the same as a venue-specific
+deposit intent. Use `GET /wallet` for the managed destination and deposit
+details currently exposed by Unified API.
 
 For external bridge/provider flows such as Relay, Robinhood Chain USDG, MetaMask Mobile bridge links, or prefilled third-party deposit URLs, use `skills/external-deposit` instead. Do not use this primitive to encode arbitrary bridge calldata, approvals, or contract deposit calls into transaction QRs.
 
@@ -90,10 +92,13 @@ Scan the QR with a wallet that supports Arbitrum token-transfer URIs. If the wal
 
 ## Next Step for Lighter
 
-After the wallet has the correct USDC, use the `lighter` skill to create the Lighter CCTP deposit intent:
+After sending funds, use Unified API to inspect the managed wallet and deposit
+history:
 
 ```text
-POST /v3/portfolio/lighter/deposit
+GET /wallet
+GET /wallet/deposits
 ```
 
-That endpoint returns the actual Lighter intent address to receive the USDC transfer for venue credit.
+If the current OpenAPI contract does not expose a Lighter CCTP intent action,
+report that venue-funding step as unavailable.

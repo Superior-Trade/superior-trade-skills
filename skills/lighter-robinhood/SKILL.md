@@ -1,6 +1,6 @@
 ---
 name: lighter-robinhood
-description: "Use when trading Robinhood Chain Lighter through Superior Trade, or when a config needs the exchange name lighter-robinhood."
+description: "Use when planning a Robinhood Chain Lighter strategy through Superior Trade, or when a config needs the venue name lighter-robinhood."
 metadata:
   version: 1.0.0
   updated: 2026-07-16
@@ -11,17 +11,15 @@ metadata:
     type: api_key
     env: SUPERIOR_TRADE_API_KEY
     header: x-api-key
-    scope: "Read-write the user's own Robinhood Chain Lighter deployment plans and signed transaction proxy submissions. Cannot export private keys or access other users' data."
+    scope: "Read Unified venue capabilities and prepare contract-supported Robinhood Chain Lighter backtests or deployments. Cannot submit an undocumented signed proxy action, export private keys, or access other users' data."
   env:
     - name: SUPERIOR_TRADE_API_KEY
       description: "Superior Trade API key (x-api-key header). Obtained at https://account.superior.trade."
       required: true
       type: api_key
   externalEndpoints:
-    - url: https://api.superior.trade
-      purpose: "Superior Trade deployment planning and signed transaction proxy operations"
-    - url: https://api.rh.lighter.xyz
-      purpose: "Robinhood Chain Lighter public API and signed transaction submission through Superior Trade"
+    - url: https://unified-api-zag4gzx6gq-an.a.run.app
+      purpose: "Unified venue discovery, backtests, and deployment planning"
 ---
 
 # Superior Trade Robinhood Chain Lighter
@@ -30,69 +28,61 @@ Use this skill when the user asks about Robinhood Chain Lighter, Robinhood Walle
 
 **Exchange name:** `lighter-robinhood`
 **Venue config:** `{ "venue": "lighter-robinhood", "instrument_id": "<SYMBOL>-PERP.LIGHTER-RH" }`
-**API base:** `https://api.rh.lighter.xyz`
-**WebSocket:** `wss://api.rh.lighter.xyz/stream`
+**Superior API base:** `https://unified-api-zag4gzx6gq-an.a.run.app`
 **Robinhood Chain id:** `4663`
 **Perps deposit asset:** `USDG`
 
 ## Safety Rules
 
 - Never ask for private keys, seed phrases, API private keys, passwords, or wallet credentials.
-- Never treat `lighter-robinhood` as an alias for `lighter`; it has a different API base, chain id, deposit asset, and instrument suffix.
+- Never treat `lighter-robinhood` as an alias for `lighter`; it has a different venue profile, chain id, deposit asset, and instrument suffix.
 - Do not reuse the default Lighter USDC CCTP deposit wording. Robinhood Chain Lighter perps require USDG.
 - Do not claim live Nautilus execution support until signed transaction generation supports Robinhood Chain id `4663`.
-- Never move funds, submit a signed proxy action, or start live trading without explicit user confirmation.
+- Never move funds or start live trading without explicit user confirmation.
 
 ## Deployment Planning
 
-Create deployment plans through `/v3/deployments` with `venue: "lighter-robinhood"` and `.LIGHTER-RH` instruments.
+First read `GET /context/venues`, `GET /runtime/frameworks`, and
+`GET /context/markets`. Create a deployment only if the returned capabilities
+include `lighter-robinhood`; otherwise report it as unavailable through Unified
+API. When supported, use `POST /runtime/deployments` with top-level fields from
+`GET /openapi.json`, `venue: "lighter-robinhood"`, and the instrument identifier
+returned by market discovery.
 
 ```json
 {
-  "region": "tokyo",
-  "deployment": {
-    "code": "class RobinhoodLighterStrategy: pass\n",
-    "config": {
-      "venue": "lighter-robinhood",
-      "runtime": "nautilus-pyo3",
-      "instrument_id": "PLTR-PERP.LIGHTER-RH"
-    }
+  "framework": "nautilus",
+  "venue": "lighter-robinhood",
+  "mode": "paper",
+  "name": "robinhood-lighter-plan",
+  "code": "class RobinhoodLighterStrategy: pass\n",
+  "config": {
+    "instrument_id": "PLTR-PERP.LIGHTER-RH"
   }
 }
 ```
 
-The API plans the `lighter-robinhood-tokyo` venue profile. Starting the deployment currently returns `409` with reason `LighterRobinhoodChainIdUnsupported`; endpoint overrides alone are insufficient because the current Nautilus Lighter signer only supports built-in mainnet/testnet chain ids.
+Do not claim a fixed region profile or status code. Read the created deployment
+and its logs, and use `PUT /runtime/deployments/{id}/status` only after the user
+confirms the exact live action.
 
-## Signed Proxy
+## One-time actions
 
-For one-off signed order proxy calls, include the top-level exchange selector so the API signs against Robinhood Chain Lighter settings:
-
-```json
-{
-  "exchange": "lighter-robinhood",
-  "action": {
-    "type": "placeOrder",
-    "from": "0xSuperiorManagedWallet",
-    "market_id": 12,
-    "side": "buy",
-    "quote_amount": "10",
-    "max_slippage": "0.005",
-    "reduce_only": false,
-    "price_protection": true
-  }
-}
-```
-
-The signer uses `base_url: "https://api.rh.lighter.xyz"` and `chain_id: 4663` for this request.
+The current committed Unified contract does not define a Robinhood Chain
+Lighter execution action. Report one-off order or signed-proxy requests as
+unavailable. Do not adapt an older payload to `POST /runtime/executions`.
 
 ## Deposits
 
-Robinhood Chain Lighter perps require USDG, not USDC. The current Superior `/v3/portfolio/lighter/deposit` route is the default Lighter USDC CCTP flow and must not be presented as a Robinhood Chain Lighter deposit path.
+Robinhood Chain Lighter perps require USDG, not USDC. `GET /wallet/deposits`
+is history only and must not be presented as a Robinhood Chain Lighter deposit
+action.
 
 Until Superior adds a dedicated Robinhood Chain Lighter deposit route, instruct the user to fund Robinhood Chain Lighter with USDG through the official Robinhood Chain Lighter or Robinhood Wallet flow, then verify account readiness through Superior once the API supports venue-specific Robinhood readiness.
 
 ## Troubleshooting
 
-- `validation_failed`: confirm `config.venue` is exactly `lighter-robinhood` and the instrument ends with `.LIGHTER-RH`.
-- `LighterRobinhoodChainIdUnsupported`: expected for live Nautilus starts until chain id `4663` signing is supported.
-- `lighter_error`: do not retry blindly; report the upstream message and verify market id, size, slippage, nonce, and account readiness.
+- Confirm the venue and instrument against `GET /context/venues` and
+  `GET /context/markets`; do not rely on hard-coded suffix rules alone.
+- If creation or start fails, report the Unified deployment status and logs.
+  Do not reinterpret an older venue-specific error contract.

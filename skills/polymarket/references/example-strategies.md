@@ -210,4 +210,3 @@ class SpreadCapture(Strategy):
     def on_stop(self):
         self.cancel_all_orders(self.instrument_id)
 ```
-

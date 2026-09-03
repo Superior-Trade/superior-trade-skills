@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "validate": "node scripts/validate.mjs && node scripts/validate-skills.mjs && node scripts/audit-endpoints.mjs",
+    "test": "node --test scripts/*.test.mjs skills/*/scripts/*.test.mjs",
+    "validate": "pnpm run test && node scripts/validate.mjs && node scripts/validate-skills.mjs && node scripts/audit-endpoints.mjs",
     "sync:upstream": "node scripts/sync-upstream.mjs",
     "lint": "pnpm run validate",
     "check-types": "pnpm run validate",

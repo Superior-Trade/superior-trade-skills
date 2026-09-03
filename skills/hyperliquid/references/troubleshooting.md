@@ -10,7 +10,7 @@ Reference for the `hyperliquid` skill. See SKILL.md for the workflow and safety 
 
 ### Reporting DCA Trades
 
-For DCA strategies: distinguish trades from orders ("X trades, Y buy orders, Z sell orders"), show per-order detail for at least the first trade, flag minimum order rejections or dust positions. Order-level detail comes from `GET /v2/backtesting/{id}/logs`; `resultUrl` is null on completed runs. Skip breakdown for non-DCA strategies.
+For DCA strategies: distinguish trades from orders ("X trades, Y buy orders, Z sell orders"), show per-order detail for at least the first trade, and flag minimum order rejections or dust positions. Read the completed record from `GET /runtime/backtests/{id}` and use `GET /runtime/backtests/{id}/logs` for available order-level evidence. Skip the breakdown for non-DCA strategies.
 
 ### Log Interpretation
 
@@ -26,7 +26,7 @@ Check in order:
 
 1. **Main wallet balance** — agent wallet $0 is normal; check the platform-managed main wallet
 2. **`stake_amount`** — for simple single-entry strategies, if `"unlimited"` with a small balance, redeploy with an explicit numeric amount slightly below balance. For `position_adjustment_enable` / `adjust_trade_position` strategies, either use fixed stake with enough wallet room for planned adds, or keep `stake_amount: "unlimited"` and reduce `custom_stake_amount`, ladder count, or total planned exposure.
-3. **Credentials** — verify `credentials_status: "stored"` and `WALLET_ADDRESS` in startup logs
+3. **Credentials** — inspect credential state on `GET /runtime/deployments/{id}` and confirm the expected wallet address in startup logs
 4. **Strategy conditions** — check if entry conditions are met on recent candles
 5. **Logs** — check for rate limits, exchange rejections, pair errors
 6. **Pair validity** — verify pair is active on Hyperliquid
@@ -56,7 +56,7 @@ When a bot crashes, it may leave open positions that lock up margin. Strategy co
 
 ### Backtest `limit_exceeded` Error
 
-If you get a `limit_exceeded` error when creating a backtest, the user has hit the concurrent backtest limit. Delete completed/failed backtests first: `DELETE /v2/backtesting/{id}`
+If you get a `limit_exceeded` error when creating a backtest, the user has hit the concurrent backtest limit. Delete completed/failed backtests first: `DELETE /runtime/backtests/{id}`
 
 ### Timezone Reminder
 

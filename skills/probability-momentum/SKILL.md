@@ -14,8 +14,8 @@ Use this when someone asks for momentum, trend following, breakout, follow-the-c
 
 ## What the agent should look for
 
-- Exact market slug from `POST /v3/markets/search`.
-- `backtestSupported: true`.
+- Canonical Polymarket market from `GET /context/markets?venue=polymarket`.
+- `backtest_ready: true`.
 - Sufficient filled-trade history for the requested lookback window.
 - Rising probability on last-trade filled ticks.
 - Elevated fill counts or larger notional during the move.
